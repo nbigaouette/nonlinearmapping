@@ -18,7 +18,10 @@ You are kindly asked to cite the following publication if you use this work:
 Requirements
 -------------------------
 
-The code is written in Python. It should work on Pyton 2.6 and 2.7.
+The code is written in Python on [ArchLinux](http://www.archlinux.org/). It should work on Pyton 2.6 and 2.7.
+
+The exact requirements are:
+
 * Python 2.6 or 2.7.
 * [Numpy](http://numpy.scipy.org/)
 * [Matplotlib](http://matplotlib.sourceforge.net/)
