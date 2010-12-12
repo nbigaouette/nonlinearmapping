@@ -15,6 +15,25 @@ You are kindly asked to cite the following publication if you use this work:
 * N. Bigaouette, E. Ackad, L. Ramunno. Nonlinear grid mapping applied to an FDTD-based, multi-center 3D Schrödinger equation solver, 2010.
 
 
+Requirements
+-------------------------
+
+The code is written in Python. It should work on Pyton 2.6 and 2.7.
+* Python 2.6 or 2.7.
+* [Numpy](http://numpy.scipy.org/)
+* [Matplotlib](http://matplotlib.sourceforge.net/)
+
+Due to Numpy and Matplotlib not (yet) ported to Python 3, the requirement over Python is 2.7 or less.
+
+Windows users can try [PortablePython](http://www.portablepython.com/) version [2.5.4](http://www.portablepython.com/wiki/PortablePython1.1Py2.5.4) as it includes al requirements.
+Note that the scripts here have not been tested with PortablePython.
+
+
+Usage
+-------------------------
+./mapping.py
+
+
 License
 -------------------------
 
