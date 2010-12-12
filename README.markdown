@@ -40,4 +40,4 @@ Usage
 License
 -------------------------
 
-This code is licensed under the GPLv3 and is (c) 2010 Nicolas Bigaouette.
+This code is licensed under the [GPLv3](http://www.gnu.org/licenses/gpl.html) and is (c) 2010 Nicolas Bigaouette.
