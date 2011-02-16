@@ -980,7 +980,7 @@ def main():
     if (options.equal):
         x0s = numpy.zeros((nb_ions), dtype=float)
         Zs  = numpy.ones((nb_ions), dtype=float)
-        xmiddle = (xmin + xmax) / 2.0
+        xmiddle = (options.xmin + options.xmax) / 2.0
         xstart = xmiddle - (nb_ions * distance / 2.0)
         xcm = 0.0
         for n in xrange(nb_ions):
