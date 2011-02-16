@@ -1,15 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+# ***************************************************************************
+# Parse command line arguments
+from optparse import OptionParser
+parser = OptionParser()
+
+parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Show all output. [default: %default]")
+
+(options, args) = parser.parse_args()
+# ***************************************************************************
+
+
 # Imported necessary python modules
 import numpy, sys, math
 import matplotlib.pyplot as plt
 
 # Import specific figure parameters
 import matplotlib_params
-
-#verbose = True
-verbose = False
 
 # ***************************************************************************
 class NonLinearMapping:
@@ -817,7 +825,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
     imax_prev_ion = 0.0
     xmax_prev_ion = 0.0
 
-    if (verbose):
+    if (options.verbose):
         print "************************************"
         print "Domain: "
         print "domain_size =", domain_size
@@ -871,7 +879,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
     assert(subdomains_ratios.sum() - 1.0 < 1.0e-5)
 
     for n in xrange(nb_ions):
-        if (verbose):
+        if (options.verbose):
             print "************************************"
             print "Ion #" + str(n), " position =", x0s[n]
 
@@ -907,7 +915,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
 
         x0 = x0s[n]
 
-        if (verbose):
+        if (options.verbose):
             print "delta_i          =", delta_i
             print "subdomain_size   =", subdomain_size
         assert(subdomain_size > 0.0)
@@ -919,7 +927,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
         #mapping_obj = SqrtMapping()
         mapping_obj = PotentialMapping()
         mapping_obj.Initialize(istart, istop, xstart, xstop, x0, dxmin)
-        if (verbose):
+        if (options.verbose):
             mapping_obj.Print()
 
         # Save values for later use.
@@ -983,6 +991,7 @@ def main():
 
     i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, i_x0md, i_x0pd, ds)
 
+    print "######################################################################################################"
     print "Domain range:   [" + str(xmin) + ", " + str(xmax) + "] Bohr"
     print "Ions positions:", x0s, "Bohr"
     print "Total number of cells:", int(ni)
