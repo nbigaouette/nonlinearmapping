@@ -6,10 +6,10 @@
 from optparse import OptionParser
 parser = OptionParser()
 
-parser.add_option("-v", "--verbose",            action="store_true",    dest="verbose",       default=False,        help="Show all output. [default: %default]")
-parser.add_option("-m", "--mapping", type=str,                          dest="mapping_type",  default="potential",  help="Mapping type. [default: %default]")
-parser.add_option("-e", "--even",               action="store_true",    dest="equal",         default=False,        help="Spread the atoms evenly in domain (overwrites -x). [default: %default]")
-parser.add_option("-x",              type=float,action="append",        dest="x0s",           default=None,         help="Ion positions [default: [3,5,8]]")
+parser.add_option("-v", "--verbose",            action="store_true",    dest="verbose",     default=False,      help="Show all output. [default: %default]")
+parser.add_option("-m", "--mapping",type=str,                           dest="mapping_type",default="potential",help="Mapping type. [default: %default]")
+parser.add_option("-e", "--even",               action="store_true",    dest="equal",       default=False,      help="Spread the atoms evenly in domain (overwrites -x). [default: %default]")
+parser.add_option("-x",             type=float, action="append",        dest="x0s",         default=None,       help="Ion positions [default: [3,5,8] Bohr]")
 parser.add_option("-d", "--dxmin",  type=float,                         dest="dxmin",       default=0.05,       help="Minimum cell size. [default: %default Bohr]")
 parser.add_option("--xmin",         type=float,                         dest="xmin",        default=0.0,        help="Domain lower bound. [default: %default Bohr]")
 parser.add_option("--xmax",         type=float,                         dest="xmax",        default=10.0,       help="Domain upper bound. [default: %default Bohr]")
