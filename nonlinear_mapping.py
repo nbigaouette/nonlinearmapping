@@ -752,6 +752,7 @@ class LinearMapping(NonLinearMapping):
 #class LinearMapping(NonLinearMapping):
 
 class Subdomain:
+    """ Class to ease up subdomain boundaries """
     def __init__(self):
         self.xmin = 0.0
         self.xmax = 0.0
