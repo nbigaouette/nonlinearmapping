@@ -7,6 +7,7 @@ from optparse import OptionParser
 parser = OptionParser()
 
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Show all output. [default: %default]")
+parser.add_option("-m", "--mapping", type=str,            dest="mapping_type",  default="potential",    help="Mapping type. [default: %default]")
 
 (options, args) = parser.parse_args()
 # ***************************************************************************
@@ -922,10 +923,15 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
 
 
         # Choose which mapping to plot
-        #mapping_obj = LinearMapping()
-        #mapping_obj = FieldMapping()
-        #mapping_obj = SqrtMapping()
-        mapping_obj = PotentialMapping()
+        if (options.mapping_type == "linear"):
+            mapping_obj = LinearMapping()
+        elif (options.mapping_type == "field"):
+            mapping_obj = FieldMapping()
+        elif (options.mapping_type == "sqrt"):
+            mapping_obj = SqrtMapping()
+        elif (options.mapping_type == "potential"):
+            mapping_obj = PotentialMapping()
+
         mapping_obj.Initialize(istart, istop, xstart, xstop, x0, dxmin)
         if (options.verbose):
             mapping_obj.Print()
