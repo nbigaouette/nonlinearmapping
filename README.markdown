@@ -28,8 +28,8 @@ The exact requirements are:
 
 Due to Numpy and Matplotlib not (yet) ported to Python 3, the requirement over Python is 2.7 or less.
 
-Windows users can try [PortablePython](http://www.portablepython.com/) version [2.5.4](http://www.portablepython.com/wiki/PortablePython1.1Py2.5.4) as it includes al requirements.
-Note that the scripts here have not been tested with PortablePython.
+Windows users can try [Python(x,y)](http://www.pythonxy.com/) as it includes all requirements. [PortablePython](http://www.portablepython.com/) version [2.5.4](http://www.portablepython.com/wiki/PortablePython1.1Py2.5.4) could also be used.
+Note that the scripts here have not been tested with either Python(x,y) nor PortablePython.
 
 
 Usage
