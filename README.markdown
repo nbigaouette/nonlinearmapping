@@ -12,7 +12,8 @@ Attribution
 
 You are kindly asked to cite the following publication if you use this work:
 
-* N. Bigaouette, E. Ackad, L. Ramunno. Nonlinear grid mapping applied to an FDTD-based, multi-center 3D Schrödinger equation solver, 2010.
+* N. Bigaouette, E. Ackad, L. Ramunno. Nonlinear grid mapping applied to an FDTD-based, multi-center 3D Schrödinger equation solver. Submitted to
+Computer Physics Communications, 2011.
 
 
 Requirements
