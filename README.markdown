@@ -4,7 +4,7 @@ Non-Linear Mapping
 Content
 -------------------------
 
-This is a simple example of the multicenter nonlinear mapping described in [PUBLICATION].
+This is a simple example of the multicenter nonlinear mapping described in "Nonlinear grid mapping applied to an FDTD-based, multi-center 3D Schrödinger equation solver".
 
 
 Attribution
