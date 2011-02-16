@@ -595,7 +595,7 @@ class FieldMapping(NonLinearMapping):
 
         # Needed parameters for electrostatic field mapping.
         tmp = 1.0/(self.xmax - self.x0) + 1.0/(self.x0 - self.xmin)
-        discriminant = 4.0 - tmp*self.imax*self.dxmin
+        discriminant = 4.0 - tmp*(self.imax-self.imin)*self.dxmin
         assert(discriminant > 0.0)
         self.d1 = (2.0 + numpy.sqrt(discriminant)) / tmp
         self.d2 = (2.0 - numpy.sqrt(discriminant)) / tmp
@@ -630,18 +630,18 @@ class FieldMapping(NonLinearMapping):
 
     def Calculate_i1(self, x):
         """ Calculate i1(x) (region 1). """
-        return self.A * ( 1.0/(self.x0 - x) - 1.0/(self.x0 - self.xmin) )
+        return self.A * ( 1.0/(self.x0 - x) - 1.0/(self.x0 - self.xmin) ) + self.imin
     def Calculate_i3(self, x):
         """ Calculate i3(x) (region 3). """
-        return self.A * ( 1.0/(self.x0 - x) + 1.0/self.d )
+        return self.A * ( 1.0/(self.x0 - x) + 1.0/self.d ) + self.imin
     #
 
     def Calculate_x1(self, i):
         """ Calculate x1(i) (region 1). """
-        return self.x0 - self.A / (i + self.A/(self.x0-self.xmin))
+        return self.x0 - self.A / ((i-self.imin) + self.A/(self.x0-self.xmin))
     def Calculate_x3(self, i):
         """ Calculate x3(i) (region 3). """
-        return - 1.0 / ( (i-self.i_x0pd)/self.A - 1.0/self.d ) - self.d
+        return - 1.0 / ( (i-self.i_x0pd)/self.A - 1.0/self.d ) - self.d + self.xmin
     #
 
     def Calculate_dx1di(self, i):
