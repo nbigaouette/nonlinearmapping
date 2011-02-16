@@ -775,8 +775,8 @@ class Subdomain:
 
 
 # ***************************************************************************
-def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
-                      x0_p_d = None, i_x0md = None, i_x0pd = None):
+def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
+                      i_x0md = None, i_x0pd = None, ds = None):
     """
         Calculate mapping of a domain using given parameters.
         Input arguments:
@@ -786,10 +786,9 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
             dxmin:  Minimum cell size
             x0s:    List containing ions location
         Output arguments:
-            x0_m_d: List containing the boundary locations between regions 1 and 2 of a subdomain's region (x0 - d). Useful for plotting.
-            x0_p_d: List containing the boundary locations between regions 2 and 3 of a subdomain's region (x0 + d). Useful for plotting.
             i_x0md: List containing i(x0 - d) for each ion. Useful for plotting.
             i_x0pd: List containing i(x0 + d) for each ion. Useful for plotting.
+            ds: List containing "d" for each ion. Useful for plotting.
     """
 
     if (x0s == None):
@@ -924,14 +923,12 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
             mapping_obj.Print()
 
         # Save values for later use.
-        if (x0_m_d != None):
-            x0_m_d.append(x0s[n]-mapping_obj.d)
-        if (x0_p_d != None):
-            x0_p_d.append(x0s[n]+mapping_obj.d)
         if (i_x0md != None):
             i_x0md.append(mapping_obj.i_x0md)
         if (i_x0pd != None):
             i_x0pd.append(mapping_obj.i_x0pd)
+        if (ds != None):
+            ds.append(mapping_obj.d)
 
         i   = numpy.concatenate((i,     mapping_obj.Get_i()+imax_prev_ion))
         x   = numpy.concatenate((x,     mapping_obj.Get_x()+xmax_prev_ion))
@@ -980,14 +977,15 @@ def main():
 
     x0s = [3.0, 5.0, 8.0]
 
-    x0_m_d = []
-    x0_p_d = []
+    ds = []
     i_x0md = []
     i_x0pd = []
 
-    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0_p_d, i_x0md, i_x0pd)
+    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, i_x0md, i_x0pd, ds)
+
     print "Domain range:   [" + str(xmin) + ", " + str(xmax) + "] Bohr"
     print "Ions positions:", x0s, "Bohr"
+    print "Subdomains' width 'd':", ds, "Bohr"
 
     # ***************************************************************************
     # Plot the mapping x(i)
@@ -1001,7 +999,7 @@ def main():
         plt.xlabel(r"$i$")
         plt.ylabel(r"$x$ (Bohr)")
 
-        assert(nb_ions == len(x0_m_d))
+        assert(nb_ions == len(ds))
         assert(nb_ions == len(i_x0md))
         assert(nb_ions == len(i_x0pd))
 
@@ -1009,12 +1007,12 @@ def main():
         vl = xx[-1] / 8.0
         # Horizontal lines
         for j in xrange(nb_ions):
-            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0_m_d[j], x0_m_d[j]], ':k')
-            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0_p_d[j], x0_p_d[j]], ':k')
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]-ds[j], x0s[j]-ds[j]], ':k')
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]+ds[j], x0s[j]+ds[j]], ':k')
         # Vertical lines
         for j in xrange(nb_ions):
-            plt.plot([i_x0md[j], i_x0md[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
-            plt.plot([i_x0pd[j], i_x0pd[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
+            plt.plot([i_x0md[j], i_x0md[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
+            plt.plot([i_x0pd[j], i_x0pd[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
 
         # Add arrows surrounding linear regions
         arrow_length = (xmax-xmin)/100.0*7.0 # 7% of figure's vertical axis range
@@ -1025,8 +1023,8 @@ def main():
         for j in xrange(nb_ions):
             #arrow_x = (ni/16.0) * (1.0 + (ai%2))
             arrow_x = i_x0md[j] - (15.0*hl/16.0)
-            plt.arrow(arrow_x, x0_m_d[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-            plt.arrow(arrow_x, x0_p_d[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+            plt.arrow(arrow_x, x0s[j]-ds[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+            plt.arrow(arrow_x, x0s[j]+ds[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
             plt.text( arrow_x, x0s[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
 
         # Add ions' positions to ylabels
@@ -1077,9 +1075,9 @@ def main():
         plt.plot(ii, xx, label=r'$x(i)$ (continuous)')
         plt.plot(i, x, 'xr', label=r'$x(i)$ (discrete)')
         for n in xrange(nb_ions):
-            plt.plot([0.0, ii.max()], [x0_m_d[n], x0_m_d[n]], ':k')
-            plt.plot([0.0, ii.max()], [x0s[n],    x0s[n]], ':k')
-            plt.plot([0.0, ii.max()], [x0_p_d[n], x0_p_d[n]], ':k')
+            plt.plot([0.0, ii.max()], [x0s[n]-ds[n], x0s[n]-ds[n]], ':k')
+            plt.plot([0.0, ii.max()], [x0s[n],       x0s[n]],       ':k')
+            plt.plot([0.0, ii.max()], [x0s[n]+ds[n], x0s[n]+ds[n]], ':k')
         for j in xrange(len(i_x0md)):
             plt.plot([i_x0md[j], i_x0md[j]], [xmin, xmax], ':k')
             plt.plot([i_x0pd[j], i_x0pd[j]], [xmin, xmax], ':k')
