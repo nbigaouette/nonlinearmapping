@@ -1054,8 +1054,6 @@ def main():
         xaxis[-1] = int(ii[-1])
         plt.xticks(xaxis)
 
-        #matplotlib_params.savefigure(fig, "figure1_mapping")
-
 
     # ***************************************************************************
     if (show_figure_all_mapping):
