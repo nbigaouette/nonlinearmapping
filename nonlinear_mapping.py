@@ -8,12 +8,12 @@ parser = OptionParser()
 
 parser.add_option("-v", "--verbose",            action="store_true",    dest="verbose",     default=False,      help="Show all output. [default: %default]")
 parser.add_option("-m", "--mapping",type=str,                           dest="mapping_type",default="potential",help="Mapping type. [default: %default]")
-parser.add_option("-e", "--even",               action="store_true",    dest="equal",       default=False,      help="Spread the atoms evenly in domain (overwrites -x). [default: %default]")
+parser.add_option("-n",             type=int,                           dest="n",           default=None,       help="Set number of ions, spaced by 2 Bohr (overwrites -x). [default: %default]")
 parser.add_option("-x",             type=float, action="append",        dest="x0s",         default=None,       help="Ion positions [default: [3,5,8] Bohr]")
 parser.add_option("-d", "--dxmin",  type=float,                         dest="dxmin",       default=0.05,       help="Minimum cell size. [default: %default Bohr]")
 parser.add_option("--xmin",         type=float,                         dest="xmin",        default=0.0,        help="Domain lower bound. [default: %default Bohr]")
 parser.add_option("--xmax",         type=float,                         dest="xmax",        default=10.0,       help="Domain upper bound. [default: %default Bohr]")
-parser.add_option("-n",             type=int,                           dest="ni",          default=50,         help="Total number of grid points. [default: %default Bohr]")
+parser.add_option("--ni",           type=int,                           dest="ni",          default=50,         help="Total number of grid points. [default: %default Bohr]")
 parser.add_option("-a", "--all",                action="store_true",    dest="plot_all",    default=False,      help="Plot all mapping (x(i), J1(i) and J2(i)). [default: %default]")
 
 (options, args) = parser.parse_args()
@@ -972,12 +972,10 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
 # ***************************************************************************
 def main():
 
-    nb_ions = len(options.x0s)
-
-    distance = 2.0 # Distance between each ions [bohr]
-
     # Set ions' locations
-    if (options.equal):
+    if (options.n != None):
+        distance = 2.0 # Distance between each ions [bohr]
+        nb_ions = len(options.x0s)
         x0s = numpy.zeros((nb_ions), dtype=float)
         Zs  = numpy.ones((nb_ions), dtype=float)
         xmiddle = (options.xmin + options.xmax) / 2.0
@@ -991,6 +989,7 @@ def main():
             x0s[n] += -xcm + xmiddle
     else:
         x0s = options.x0s
+        nb_ions = len(x0s)
 
     ds = []
     i_x0md = []
