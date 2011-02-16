@@ -815,8 +815,6 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
     imax_prev_ion = 0.0
     xmax_prev_ion = 0.0
 
-    #figure()
-
     print "************************************"
     print "Domain: "
     print "domain_size =", domain_size
@@ -839,8 +837,6 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
             subdomains[n].xmax = (x0s[n] + x0s[n+1]) / 2.0
         #
 
-        #print "subdomains["+str(n)+"].Size_x() = ", subdomains[n].Size_x()
-
         prev_xstop = subdomains[n].xmax
 
     # Calculate ratio to total domain size for each subdomains
@@ -849,7 +845,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
         subdomains_ratios[n] = subdomains[n].Size_x() / domain_size
         #print "subdomains_ratios["+str(n)+"] = ", subdomains_ratios[n]
 
-    # Make sure each rations is at least 10%. If not, take 1% fro its neigbours
+    # Make sure each rations is at least 10%. If not, take 1% from its neigbours
     stop = False
     wanted_ratio = 0.10
     while (not stop):
@@ -869,10 +865,6 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
                 break
             if (n == nb_ions-1):
                 stop = True
-    print "subdomains_ratios.sum() =", subdomains_ratios.sum()
-    #for n in xrange(nb_ions):
-    #   print "subdomains_ratios["+str(n)+"] = ", subdomains_ratios[n], "  ratio*ni =", ni*subdomains_ratios[n]
-    #sys.exit(0)
     assert(subdomains_ratios.sum() - 1.0 < 1.0e-5)
 
     for n in xrange(nb_ions):
@@ -918,6 +910,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
         assert(subdomain_size > 0.0)
 
 
+        # Choose which mapping to plot
         #mapping_obj = LinearMapping()
         #mapping_obj = FieldMapping()
         #mapping_obj = SqrtMapping()
@@ -925,6 +918,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
         mapping_obj.Initialize(istart, istop, xstart, xstop, x0, dxmin)
         mapping_obj.Print()
 
+        # Save values for later use.
         if (x0_m_d != None):
             x0_m_d.append(x0s[n]-mapping_obj.d)
         if (x0_p_d != None):
@@ -943,28 +937,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
         xx  = numpy.concatenate((xx,    mapping_obj.Get_xx()+xmax_prev_ion))
         dxx = numpy.concatenate((dxx,   mapping_obj.Get_dxx()))
         ddxx= numpy.concatenate((ddxx,  mapping_obj.Get_ddxx()))
-
-        #plt.plot([imax_prev_ion+mapping_obj.i_x0md, imax_prev_ion+mapping_obj.i_x0md],  [xstart, xstop], ':m')
-        #plt.plot([imax_prev_ion+mapping_obj.i_x0pd, imax_prev_ion+mapping_obj.i_x0pd],  [xstart, xstop], ':m')
-        #plt.plot([istart, istop],                                               [xmax_prev_ion+x0 - mapping_obj.d, xmax_prev_ion+x0 - mapping_obj.d], ':m')
-        #plt.plot([istart, istop],                                               [xmax_prev_ion+x0 + mapping_obj.d, xmax_prev_ion+x0 + mapping_obj.d], ':m')
-        #plt.plot([istart, istop], [xmax_prev_ion+x0, xmax_prev_ion+x0], ':k')
-
-        #print "i[-1] =", i[-1], "  imax_prev_ion =", imax_prev_ion
-
-        #imax_prev_ion = ii[-1]
-        #xmax_prev_ion = xx[-1]
     #
-
-    ##figure()
-    #plt.plot(ii, xx, '-b')
-    ##plt.plot( i,  x, 'xr')
-    #plt.xlabel("i")
-    #plt.ylabel("x")
-    ##plt.axis((0.0, ni-1.0, xmin, xmax))
-    #plt.grid()
-    #plt.show()
-    #sys.exit(0)
 
     return i, x, dx, ddx, ii, xx, dxx, ddxx
 # def mapping_nonlinear()
