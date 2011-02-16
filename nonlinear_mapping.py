@@ -1088,15 +1088,20 @@ def main():
         # Subplot for x(i)
         ax1 = fig.add_axes([im_x0, im_y0+2*(im_height+im_gap), im_width, im_height], **axprops)
         axprops['sharex'] = ax1
-        plt.plot(ii, xx, label=r'$x(i)$ (continuous)')
-        plt.plot(i, x, 'xr', label=r'$x(i)$ (discrete)')
-        for n in xrange(nb_ions):
-            plt.plot([0.0, ii.max()], [x0s[n]-ds[n], x0s[n]-ds[n]], ':k')
-            plt.plot([0.0, ii.max()], [x0s[n],       x0s[n]],       ':k')
-            plt.plot([0.0, ii.max()], [x0s[n]+ds[n], x0s[n]+ds[n]], ':k')
-        for j in xrange(len(i_x0md)):
-            plt.plot([i_x0md[j], i_x0md[j]], [options.xmin, options.xmax], ':k')
-            plt.plot([i_x0pd[j], i_x0pd[j]], [options.xmin, options.xmax], ':k')
+        plt.plot(ii, xx,      label=r'$x(i)$ (continuous)')
+        plt.plot(i,  x, 'xr', label=r'$x(i)$ (discrete)')
+        # Plot horizontal and vertical lines around linear regions
+        hl = 3.0 * ii[-1] / 32.0
+        vl = xx[-1] / 8.0
+        # Horizontal lines
+        for j in xrange(nb_ions):
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]-ds[j], x0s[j]-ds[j]], ':k')
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]+ds[j], x0s[j]+ds[j]], ':k')
+        # Vertical lines
+        for j in xrange(nb_ions):
+            plt.plot([i_x0md[j], i_x0md[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
+            plt.plot([i_x0pd[j], i_x0pd[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
+
         ax1.set_ylim((options.xmin, options.xmax))
         plt.grid()
         plt.ylabel(r"$x$")
