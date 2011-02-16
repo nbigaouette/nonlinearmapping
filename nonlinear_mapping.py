@@ -774,7 +774,6 @@ class Subdomain:
 # ***************************************************************************
 def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
                       x0_p_d = None, i_x0md = None, i_x0pd = None):
-    from scipy import interpolate
 
     if (x0s == None):
         nb_ions = 1
