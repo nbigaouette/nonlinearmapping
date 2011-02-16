@@ -343,8 +343,7 @@ class SqrtMapping(NonLinearMapping):
         self.B = self.A * numpy.sqrt(self.x0)
         self.D = -numpy.sqrt(self.d)
 
-        self.Calculate_i_x0md_i_x0pd()
-
+        NonLinearMapping.Calculate_i_x0md_i_x0pd(self)
         NonLinearMapping.Allocate_and_Set_is(self)
         self.Asserts()
 
@@ -514,8 +513,7 @@ class PotentialMapping(NonLinearMapping):
         self.d = self.d_bisection()
         self.A = self.d / self.dxmin
 
-        self.Calculate_i_x0md_i_x0pd()
-
+        NonLinearMapping.Calculate_i_x0md_i_x0pd(self)
         NonLinearMapping.Allocate_and_Set_is(self)
         self.Asserts()
         NonLinearMapping.Calculate_Mapping(self)
