@@ -931,10 +931,9 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
 
 
         # Choose which mapping to plot
-        #if (options.mapping_type == "linear"):
-            #mapping_obj = LinearMapping()
-        #elif (options.mapping_type == "field"):
-        if (options.mapping_type == "field"):
+        if (options.mapping_type == "linear"):
+            mapping_obj = LinearMapping()
+        elif (options.mapping_type == "field"):
             mapping_obj = FieldMapping()
         #elif (options.mapping_type == "sqrt"):
             #mapping_obj = SqrtMapping()
