@@ -1019,6 +1019,7 @@ def main():
     assert(nb_ions == len(i_x0md))
     assert(nb_ions == len(i_x0pd))
 
+    # Plot horizontal and vertical lines around linear regions
     hl = 3.0 * ii[-1] / 32.0
     vl = xx[-1] / 8.0
     # Horizontal lines
