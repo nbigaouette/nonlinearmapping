@@ -119,7 +119,7 @@ class NonLinearMapping:
 
     def Print(self):
         """
-            Print mapping information.
+            Print generic mapping parameters.
         """
 
         print "i     = [" + str(self.imin) + ", " + str(self.imax) + "["
@@ -163,16 +163,16 @@ class NonLinearMapping:
     #
 
     def Calculate_i2(self, x):
-        """ Calculate i2(x) (linear region). See equation (21b) """
+        """ Calculate i2(x) (linear region 2). See equation (21b) """
         return (x - (self.x0 - self.d)) / self.dxmin + self.imin
     def Calculate_x2(self, i):
-        """ Calculate x2(x) (linear region) See equation (23b) """
+        """ Calculate x2(x) (linear region 2) See equation (23b) """
         return self.dxmin * (i - self.i_x0md) + self.xmin
     def Calculate_dx2di(self, i):
-        """ Calculate del x2/del i (linear region) """
+        """ Calculate del x2/del i (linear region 2) """
         return self.dxmin * numpy.ones(len(i))
     def Calculate_d2x2di2(self, i):
-        """ Calculate del^2 x2/del i^2 (linear region) """
+        """ Calculate del^2 x2/del i^2 (linear region 2) """
         return numpy.zeros((len(i)))
     #
 
