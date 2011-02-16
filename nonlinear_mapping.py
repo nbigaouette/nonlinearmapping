@@ -643,10 +643,27 @@ class FieldMapping(NonLinearMapping):
 
 # ***************************************************************************
 class LinearMapping(NonLinearMapping):
-    # Linear Mapping
+    """
+        Linear mapping class. Linear mapping is achieved by
+        making the linear region 2 encompass the whole (sub)domain.
+    """
+
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
+        # Initialize generic mapping
         NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
 
+        # Needed parameters for linear mapping.
         self.A  = 1.0e100 # Just to shut up Asserts(), not used anywhere
         self.x0 = (self.xmax + self.xmin) / 2.0
         self.d  = self.xmax - self.x0
@@ -661,18 +678,30 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Asserts(self):
+        """
+            Verify specific parameters.
+        """
+
+        # Verify generic parameters
         NonLinearMapping.Asserts(self)
     #
 
     def Print(self):
+        """
+            Print specific mapping parameters.
+        """
+
+        # Print generic parameters
         NonLinearMapping.Print(self)
 
     def Calculate_i1(self, x):
+        """ Calculate i1(x) (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(x)))
         except:
             return 0.0
     def Calculate_i3(self, x):
+        """ Calculate i3(x) (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(x)))
         except:
@@ -680,11 +709,13 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Calculate_x1(self, i):
+        """ Calculate x1(i) (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     def Calculate_x3(self, i):
+        """ Calculate x3(i) (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
@@ -692,11 +723,13 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Calculate_dx1di(self, i):
+        """ Calculate del x1 / del i (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     def Calculate_dx3di(self, i):
+        """ Calculate del x3 / del i (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
@@ -704,17 +737,19 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Calculate_d2x1di2(self, i):
+        """ Calculate del^2 x1 / del i^2 (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     def Calculate_d2x3di2(self, i):
+        """ Calculate del^2 x3 / del i^2 (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     #
-#class FieldMapping(NonLinearMapping):
+#class LinearMapping(NonLinearMapping):
 
 class Subdomain:
     def __init__(self):
