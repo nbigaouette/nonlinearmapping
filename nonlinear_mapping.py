@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 # Import specific figure parameters
 import matplotlib_params
 
+#verbose = True
+verbose = False
+
 # ***************************************************************************
 class NonLinearMapping:
     """
@@ -815,11 +818,12 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
     imax_prev_ion = 0.0
     xmax_prev_ion = 0.0
 
-    print "************************************"
-    print "Domain: "
-    print "domain_size =", domain_size
-    print "x: [", xmin, ",", xmax, "["
-    print "ni =", ni
+    if (verbose):
+        print "************************************"
+        print "Domain: "
+        print "domain_size =", domain_size
+        print "x: [", xmin, ",", xmax, "["
+        print "ni =", ni
 
     # If a subdomain is to receive less then 10% of cells, get some cells from
     # its neigbour.
@@ -868,8 +872,9 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
     assert(subdomains_ratios.sum() - 1.0 < 1.0e-5)
 
     for n in xrange(nb_ions):
-        print "************************************"
-        print "Ion #" + str(n), " position =", x0s[n]
+        if (verbose):
+            print "************************************"
+            print "Ion #" + str(n), " position =", x0s[n]
 
         # Set x limits
         xstart = xstop
@@ -903,10 +908,9 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
 
         x0 = x0s[n]
 
-        #print "x                = [" + str(xstart) + ", " + str(xstop) + "["
-        #print "i                = [" + str(istart) + ", " + str(istop) + "["
-        print "delta_i          =", delta_i
-        print "subdomain_size   =", subdomain_size
+        if (verbose):
+            print "delta_i          =", delta_i
+            print "subdomain_size   =", subdomain_size
         assert(subdomain_size > 0.0)
 
 
@@ -916,7 +920,8 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
         #mapping_obj = SqrtMapping()
         mapping_obj = PotentialMapping()
         mapping_obj.Initialize(istart, istop, xstart, xstop, x0, dxmin)
-        mapping_obj.Print()
+        if (verbose):
+            mapping_obj.Print()
 
         # Save values for later use.
         if (x0_m_d != None):
@@ -974,7 +979,6 @@ def main():
         x0s[n] += -xcm + xmiddle
 
     x0s = [3.0, 5.0, 8.0]
-    print "x0s =", x0s
 
     x0_m_d = []
     x0_p_d = []
@@ -982,6 +986,8 @@ def main():
     i_x0pd = []
 
     i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0_p_d, i_x0md, i_x0pd)
+    print "Domain range:   [" + str(xmin) + ", " + str(xmax) + "] Bohr"
+    print "Ions positions:", x0s, "Bohr"
 
     # ***************************************************************************
     # Plot the mapping x(i)
