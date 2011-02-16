@@ -14,6 +14,7 @@ parser.add_option("-d", "--dxmin",  type=float,                         dest="dx
 parser.add_option("--xmin",         type=float,                         dest="xmin",        default=0.0,        help="Domain lower bound. [default: %default Bohr]")
 parser.add_option("--xmax",         type=float,                         dest="xmax",        default=10.0,       help="Domain upper bound. [default: %default Bohr]")
 parser.add_option("-n",             type=int,                           dest="ni",          default=50,         help="Total number of grid points. [default: %default Bohr]")
+parser.add_option("-a", "--all",                action="store_true",    dest="plot_all",    default=False,      help="Plot all mapping (x(i), J1(i) and J2(i)). [default: %default]")
 
 (options, args) = parser.parse_args()
 # ***************************************************************************
@@ -970,8 +971,6 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
 
 # ***************************************************************************
 def main():
-    show_figure_mapping_xi  = True
-    show_figure_all_mapping = False
 
     nb_ions = len(options.x0s)
 
@@ -1007,77 +1006,76 @@ def main():
 
     # ***************************************************************************
     # Plot the mapping x(i)
-    if (show_figure_mapping_xi):
-        fig = plt.figure()
-        axprops = dict()
+    fig = plt.figure()
+    axprops = dict()
 
-        ax1 = plt.subplot(111)
-        plt.plot(ii, xx, label="Continuous")
-        plt.plot(i, x, "xr", label="Discrete (integers)")
-        plt.xlabel(r"$i$")
-        plt.ylabel(r"$x$ (Bohr)")
+    ax1 = plt.subplot(111)
+    plt.plot(ii, xx, label="Continuous")
+    plt.plot(i, x, "xr", label="Discrete (integers)")
+    plt.xlabel(r"$i$")
+    plt.ylabel(r"$x$ (Bohr)")
 
-        assert(nb_ions == len(ds))
-        assert(nb_ions == len(i_x0md))
-        assert(nb_ions == len(i_x0pd))
+    assert(nb_ions == len(ds))
+    assert(nb_ions == len(i_x0md))
+    assert(nb_ions == len(i_x0pd))
 
-        hl = 3.0 * ii[-1] / 32.0
-        vl = xx[-1] / 8.0
-        # Horizontal lines
-        for j in xrange(nb_ions):
-            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]-ds[j], x0s[j]-ds[j]], ':k')
-            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]+ds[j], x0s[j]+ds[j]], ':k')
-        # Vertical lines
-        for j in xrange(nb_ions):
-            plt.plot([i_x0md[j], i_x0md[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
-            plt.plot([i_x0pd[j], i_x0pd[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
+    hl = 3.0 * ii[-1] / 32.0
+    vl = xx[-1] / 8.0
+    # Horizontal lines
+    for j in xrange(nb_ions):
+        plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]-ds[j], x0s[j]-ds[j]], ':k')
+        plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0s[j]+ds[j], x0s[j]+ds[j]], ':k')
+    # Vertical lines
+    for j in xrange(nb_ions):
+        plt.plot([i_x0md[j], i_x0md[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
+        plt.plot([i_x0pd[j], i_x0pd[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
 
-        # Add arrows surrounding linear regions
-        arrow_length = (options.xmax-options.xmin)/100.0*7.0 # 7% of figure's vertical axis range
-        head_length  = arrow_length/2.0
-        gap = head_length / 2.0
-        #alpha = 0.75
-        alpha = 1.0
-        for j in xrange(nb_ions):
-            #arrow_x = (ni/16.0) * (1.0 + (ai%2))
-            arrow_x = i_x0md[j] - (15.0*hl/16.0)
-            plt.arrow(arrow_x, x0s[j]-ds[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-            plt.arrow(arrow_x, x0s[j]+ds[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-            plt.text( arrow_x, x0s[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
+    # Add arrows surrounding linear regions
+    arrow_length = (options.xmax-options.xmin)/100.0*7.0 # 7% of figure's vertical axis range
+    head_length  = arrow_length/2.0
+    gap = head_length / 2.0
+    #alpha = 0.75
+    alpha = 1.0
+    for j in xrange(nb_ions):
+        #arrow_x = (ni/16.0) * (1.0 + (ai%2))
+        arrow_x = i_x0md[j] - (15.0*hl/16.0)
+        plt.arrow(arrow_x, x0s[j]-ds[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+        plt.arrow(arrow_x, x0s[j]+ds[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+        plt.text( arrow_x, x0s[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
 
-        # Add ions' positions to ylabels
-        yaxis, yaxis_label = plt.yticks()
-        yaxis_label = [0]*len(yaxis)
-        for ai in xrange(len(yaxis)):
-            #print "ai = ", ai
-            if (str('%.0f' % yaxis[ai]) == "8"):
-                yaxis_label[ai] = r''
-                continue
-            yaxis_label[ai] = r'$'+str('%.0f' % yaxis[ai])+'$'
-        for x0i in xrange(len(x0s)):
-            #yaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
-            yaxis_label.append(r'$x_{0,' + str(x0i) + r'}$')
-            yaxis       = numpy.append(yaxis,       x0s[x0i])
-        plt.yticks(yaxis, yaxis_label)
+    # Add ions' positions to ylabels
+    yaxis, yaxis_label = plt.yticks()
+    yaxis_label = [0]*len(yaxis)
+    for ai in xrange(len(yaxis)):
+        #print "ai = ", ai
+        if (str('%.0f' % yaxis[ai]) == "8"):
+            yaxis_label[ai] = r''
+            continue
+        yaxis_label[ai] = r'$'+str('%.0f' % yaxis[ai])+'$'
+    for x0i in xrange(len(x0s)):
+        #yaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
+        yaxis_label.append(r'$x_{0,' + str(x0i) + r'}$')
+        yaxis       = numpy.append(yaxis,       x0s[x0i])
+    plt.yticks(yaxis, yaxis_label)
 
-        ax1.set_ylim((options.xmin, options.xmax))
-        ax1.set_xlim((0.0, options.ni-1.0))
+    ax1.set_ylim((options.xmin, options.xmax))
+    ax1.set_xlim((0.0, options.ni-1.0))
 
-        # By explicitly setting the yaxis labels, matplotlib will fail to detect
-        # the mouse's vertical position (what's reported in the lower right corner of the window).
-        # So clone the axis (and hide it), set the right limits so a mouse over
-        # will correctly report the position.
-        old_yaxis = plt.twinx()
-        plt.setp(old_yaxis.get_yticklabels(), visible=False)
-        old_yaxis.set_ylim((options.xmin, options.xmax))
+    # By explicitly setting the yaxis labels, matplotlib will fail to detect
+    # the mouse's vertical position (what's reported in the lower right corner of the window).
+    # So clone the axis (and hide it), set the right limits so a mouse over
+    # will correctly report the position.
+    old_yaxis = plt.twinx()
+    plt.setp(old_yaxis.get_yticklabels(), visible=False)
+    old_yaxis.set_ylim((options.xmin, options.xmax))
 
-        xaxis, xaxis_label = plt.xticks()
-        xaxis[-1] = int(ii[-1])
-        plt.xticks(xaxis)
+    xaxis, xaxis_label = plt.xticks()
+    xaxis[-1] = int(ii[-1])
+    plt.xticks(xaxis)
 
 
     # ***************************************************************************
-    if (show_figure_all_mapping):
+    if (options.plot_all):
         fig = plt.figure()
         axprops = dict()
 
