@@ -1010,8 +1010,8 @@ def main():
     axprops = dict()
 
     ax1 = plt.subplot(111)
-    plt.plot(ii, xx, label="Continuous")
-    plt.plot(i, x, "xr", label="Discrete (integers)")
+    plt.plot(ii, xx,      label="Continuous")
+    plt.plot(i,  x, "xr", label="Discrete (integers)")
     plt.xlabel(r"$i$")
     plt.ylabel(r"$x$ (Bohr)")
 
