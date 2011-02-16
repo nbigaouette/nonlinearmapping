@@ -99,19 +99,15 @@ class NonLinearMapping:
 
         # Verify that x(i(x)) == x and i(x(i)) == i
         tmp_x = self.xmin*0.99999
-        #print "abs(tmp_x - Calculate_x(Calculate_i(tmp_x))) =", abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x)))
         assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-10)
 
         tmp_x = self.xmax*0.99999
-        #print "abs(tmp_x - Calculate_x(Calculate_i(tmp_x))) =", abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x)))
         assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-10)
 
         tmp_i = self.imin*0.99999
-        #print "abs(tmp_i - Calculate_i(Calculate_x(tmp_i))) =", abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i)))
         assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-10)
 
         tmp_i = self.imax*0.99999
-        #print "abs(tmp_i - Calculate_i(Calculate_x(tmp_i))) =", abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i)))
         assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-10)
 
         # Verify i_x0md and i_x0pd
