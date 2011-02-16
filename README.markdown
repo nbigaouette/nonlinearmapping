@@ -34,7 +34,7 @@ Note that the scripts here have not been tested with either Python(x,y) nor Port
 
 Usage
 -------------------------
-./mapping.py
+./nonlinear_mapping.py
 
 
 License
