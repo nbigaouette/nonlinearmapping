@@ -1,14 +1,31 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+# Imported necessary python modules
 import numpy, sys, math
 import matplotlib.pyplot as plt
 
+# Import specific figure parameters
 import matplotlib_params
 
 # ***************************************************************************
 class NonLinearMapping:
+    """
+        Generic class to build the mapping.
+    """
+
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize generic mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
         self.imin  = imin
         self.imax  = imax
         self.xmin  = xmin
@@ -22,7 +39,12 @@ class NonLinearMapping:
         self.i_x0md= 0.0
         self.i_x0pd= 0.0
     #
+
     def Allocate_and_Set_is(self):
+        """
+            Allocate memory for arrays (continuous and discrete) in the three different regions (1, 2 and 3).
+        """
+
         # Discrete
         if (self.i_x0md > self.imin):
             self.i1 = numpy.arange(int(math.ceil(self.imin)),       int(math.floor(self.i_x0md))+1)
@@ -33,7 +55,8 @@ class NonLinearMapping:
             self.i3     = numpy.arange(int(math.ceil(self.i_x0pd)), int(math.floor(self.imax))+1)  # TODO: Fix im-1
         else:
             self.i3 = numpy.asarray([])
-        # Contiguous
+
+        # Continuous
         self.nii    = 1e5
         if (self.i_x0md > 0.0):
             self.ii1= numpy.arange(int(math.ceil(self.imin)),       self.i_x0md,    (self.i_x0md - self.imin)   / self.nii)
@@ -45,7 +68,12 @@ class NonLinearMapping:
         else:
             self.ii3= numpy.asarray([])
     #
+
     def Asserts(self):
+        """
+            Verify all calculated values to prevent breakage.
+        """
+
         if (self.x0 + self.d > self.xmax):
             raise ValueError( \
                 "\n  Linear region of ion escape the domain!" + \
@@ -71,19 +99,15 @@ class NonLinearMapping:
 
         # Verify that x(i(x)) == x and i(x(i)) == i
         tmp_x = self.xmin*0.99999
-        #print "abs(tmp_x - Calculate_x(Calculate_i(tmp_x))) =", abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x)))
         assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-10)
 
         tmp_x = self.xmax*0.99999
-        #print "abs(tmp_x - Calculate_x(Calculate_i(tmp_x))) =", abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x)))
         assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-10)
 
         tmp_i = self.imin*0.99999
-        #print "abs(tmp_i - Calculate_i(Calculate_x(tmp_i))) =", abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i)))
         assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-10)
 
         tmp_i = self.imax*0.99999
-        #print "abs(tmp_i - Calculate_i(Calculate_x(tmp_i))) =", abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i)))
         assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-10)
 
         # Verify i_x0md and i_x0pd
@@ -92,7 +116,12 @@ class NonLinearMapping:
         assert(self.i_x0md <= self.imax)
         assert(self.i_x0pd <= self.imax)
     #
+
     def Print(self):
+        """
+            Print generic mapping parameters.
+        """
+
         print "i     = [" + str(self.imin) + ", " + str(self.imax) + "["
         print "x     = [" + str(self.xmin) + ", " + str(self.xmax) + "["
         print "dxmin =", self.dxmin
@@ -123,22 +152,33 @@ class NonLinearMapping:
         except:
             pass
     #
+
     def Calculate_i_x0md_i_x0pd(self):
+        """ Calculate i(x0 - d) and i(x0 + d) """
+
         assert(self.d >= 1.0e-8)
         assert(self.dxmin >= 1.0e-8)
         self.i_x0md = self.Calculate_i1(self.x0-self.d)
         self.i_x0pd = self.i_x0md + 2.0*self.d/self.dxmin
     #
+
     def Calculate_i2(self, x):
+        """ Calculate i2(x) (linear region 2). See equation (21b) """
         return (x - (self.x0 - self.d)) / self.dxmin + self.imin
     def Calculate_x2(self, i):
+        """ Calculate x2(x) (linear region 2) See equation (23b) """
         return self.dxmin * (i - self.i_x0md) + self.xmin
     def Calculate_dx2di(self, i):
+        """ Calculate del x2/del i (linear region 2) """
         return self.dxmin * numpy.ones(len(i))
     def Calculate_d2x2di2(self, i):
+        """ Calculate del^2 x2/del i^2 (linear region 2) """
         return numpy.zeros((len(i)))
     #
+
     def Calculate_Mapping(self):
+        """ Populate the (previously) allocated arrays with the mapped values. See equations (19) """
+
         # Make sure the linear region is inside the domain
         if (self.x0 + self.d > self.xmax):
             raise ValueError("ERROR: Linear region of ion escape the domain!")
@@ -158,7 +198,7 @@ class NonLinearMapping:
         self.ddx2 = self.Calculate_d2x2di2(self.i2)
         self.ddx3 = self.Calculate_d2x3di2(self.i3)
 
-        # Contiguous
+        # Continuous
         self.xx1 = self.Calculate_x1(self.ii1)
         self.xx2 = self.Calculate_x1(self.i_x0md) + self.Calculate_x2(self.ii2) - self.xmin
         self.xx3 = self.Calculate_x1(self.i_x0md) + self.Calculate_x2(self.i_x0pd) + self.Calculate_x3(self.ii3) - 2.0*self.xmin
@@ -173,7 +213,8 @@ class NonLinearMapping:
     #
 
     def Calculate_i(self, x):
-        #if   (x < self.xmin*0.99999):
+        """ Calculate i(x) by testing in which region x is. See equation (16). """
+
         if (x < (self.xmin - 1.0e-2)):
             raise ValueError("Calculate_i(x) called with a value x = "+ str(x) +" lower then xmin = " + str(self.xmin))
         elif (x < self.x0-self.d):
@@ -188,7 +229,8 @@ class NonLinearMapping:
     #
 
     def Calculate_x(self, i):
-        #if (i < self.imin*0.999):
+        """ Calculate x(i) by testing in which region i is. """
+
         if (i < (self.imin - 1.0e-2)):
             raise ValueError("Calculate_x(i) called with a value i = "+ str(i) +" lower then imin = " + str(self.imin))
         elif (i < self.i_x0md):
@@ -203,34 +245,54 @@ class NonLinearMapping:
     #
 
     def Get_i(self):
+        """ Return i(x) for the whole subdomain (discrete values). """
         return numpy.concatenate((self.i1, self.i2, self.i3))
     def Get_x(self):
+        """ Return x(i) for the whole subdomain (discrete values). """
         return numpy.concatenate((self.x1, self.x2, self.x3))
     def Get_dx(self):
-        #print "ddx1 =", self.ddx1
-        #print "ddx2 =", self.ddx2
-        #print "ddx3 =", self.ddx3
-        #print "ddx1.shape =", self.ddx1.shape," ddx2 =", self.ddx2.shape," ddx3 =", self.ddx3.shape
+        """ Return del x / del i for the whole subdomain (discrete values). """
         return numpy.concatenate((self.dx1, self.dx2, self.dx3))
     def Get_ddx(self):
+        """ Return del^2 x / del i^2 for the whole subdomain (discrete values). """
         return numpy.concatenate((self.ddx1, self.ddx2, self.ddx3))
     def Get_ii(self):
+        """ Return i(x) for the whole subdomain (continuous values). """
         return numpy.concatenate((self.ii1, self.ii2, self.ii3))
     def Get_xx(self):
+        """ Return x(i) for the whole subdomain (continuous values). """
         return numpy.concatenate((self.xx1, self.xx2, self.xx3))
     def Get_dxx(self):
+        """ Return del x / del i for the whole subdomain (continuous values). """
         return numpy.concatenate((self.dxx1, self.dxx2, self.dxx3))
     def Get_ddxx(self):
+        """ Return del^2 x / del i^2 for the whole subdomain (continuous values). """
         return numpy.concatenate((self.ddxx1, self.ddxx2, self.ddxx3))
     #
 #
 
 # ***************************************************************************
 class SqrtMapping(NonLinearMapping):
-    # Mapping based on square root
-    # See notes.git/xournal/20101110_10h50_Mapping_SqrtRoot.xoj
+    """
+        Mapping with square root as source function S(x'). See equation (15).
+    """
+
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
+        # Initialize generic mapping
         NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
+
+        # Needed parameters for square root mapping.
         if (2.0 * self.x0 > self.xmax):
             discriminant = (numpy.sqrt(self.x0) + numpy.sqrt(self.xmax - self.x0))**2 - 2.0*self.imax*self.dxmin
             self.u1 = ((numpy.sqrt(self.x0) + numpy.sqrt(self.xmax - self.x0)) + numpy.sqrt(discriminant)) / 2.0
@@ -270,55 +332,78 @@ class SqrtMapping(NonLinearMapping):
         print "ddx3 =", self.ddx3
         print "ddx1.shape =", self.ddx1.shape," ddx2 =", self.ddx2.shape," ddx3 =", self.ddx3.shape
     #
+
     def Print(self):
+        """
+            Print specific mapping parameters.
+        """
+
         print "u1    =", self.u1
         print "u2    =", self.u2
         print "d1    =", self.d1
         print "d2    =", self.d2
         print "B     =", self.B
         print "D     =", self.D
+
+        # Print generic parameters
         NonLinearMapping.Print(self)
 
     def Asserts(self):
+        """
+            Verify specific parameters.
+        """
+
         assert(not numpy.isnan(self.u1))
         assert(not numpy.isnan(self.u2))
         assert(not numpy.isnan(self.d1))
         assert(not numpy.isnan(self.d2))
         assert(not numpy.isnan(self.d))
         assert(not numpy.isnan(self.A))
+
+        # Verify generic parameters
         NonLinearMapping.Asserts(self)
 
     def Calculate_i1(self, x):
+        """ Calculate i1(x) (region 1). """
         return -self.A * numpy.sqrt(self.x0 - x) + self.B
     def Calculate_i3(self, x):
+        """ Calculate i3(x) (region 3). """
         return self.A * (numpy.sqrt(x - self.x0) + self.D)
     #
 
     def Calculate_x1(self, i):
+        """ Calculate x1(i) (region 1). """
         return self.x0 - (numpy.sqrt(self.x0) - i/self.A)**2
     def Calculate_x3(self, i):
-        # NOTE: not the same as in the notes...?
+        """ Calculate x3(i) (region 3). """
         return ((i-self.i_x0pd)/self.A - self.D)**2 - self.d
     #
 
     def Calculate_dx1di(self, i):
+        """ Calculate del x1 / del i (region 1). """
         return 2.0/self.A * (numpy.sqrt(self.x0) - i/self.A)
     def Calculate_dx3di(self, i):
+        """ Calculate del x3 / del i (region 3). """
         return 2.0/self.A * ( (i-self.i_x0pd)/self.A - self.D )
     #
 
     def Calculate_d2x1di2(self, i):
+        """ Calculate del^2 x1 / del i^2 (region 1). """
         return -2.0/self.A**2 * numpy.ones(len(i))
     def Calculate_d2x3di2(self, i):
+        """ Calculate del^2 x3 / del i^2 (region 3). """
         return 2.0/self.A**2 * numpy.ones(len(i))
     #
 # class SqrtMapping(NonLinearMapping):
 
 # ***************************************************************************
 class PotentialMapping(NonLinearMapping):
-    # Mapping based on electrostatic potential
-    # See notes.git/xournal/20101108_17h15_Potential_Mapping.xoj
+    """
+        Mapping with electrostatic potential as source function S(x'). See equation (15).
+    """
+
     def fct_of_d(self, d):
+        """ Calculate equation (22) as a function of "d" """
         # a is box's lower bound
         # b is box's upper bound
         if (d == 0.0):
@@ -326,7 +411,11 @@ class PotentialMapping(NonLinearMapping):
             return (self.imax - self.imin)*self.dxmin
         else:
             return (self.imax - self.imin)*self.dxmin - d*( 2.0 + numpy.log( (self.x0-self.xmin)*(self.xmax-self.x0) / d**2 ) )
+        #
+    #
+
     def diff_fct_of_d(self, d):
+        """ Calculate derivative of equation (22) with respect to "d" """
         # a is box's lower bound
         # b is box's upper bound
         if (d == 0.0):
@@ -337,28 +426,8 @@ class PotentialMapping(NonLinearMapping):
             return -numpy.log( (self.x0-self.xmin)*(self.xmax-self.x0) / d**2 )
     #
 
-    def d_newton(self):
-        tolerance = 1.0e-10
-        # Initial guess
-        #d = self.xmax
-        #d = 1.0e-50
-        d = 0.0
-        f_d = self.fct_of_d(d)
-        #print "Newton's method initial guess: d =", d, " f(d) =", f_d, " diff(f,d) =", self.diff_fct_of_d(d)
-        while(abs(f_d) > tolerance):
-            d = d - self.fct_of_d(d) / self.diff_fct_of_d(d)
-            f_d = self.fct_of_d(d)
-            #print "d =", d, " f(d) =", f_d, " diff(f,d) =", self.diff_fct_of_d(d)
-
-        #print "self.fct_of_d(d="+str(d)+") =", self.fct_of_d(d)
-
-        assert(abs(self.fct_of_d(d)) < 1.0e-4)
-        assert(d > 0.0)
-
-        return d
-    #
-
     def d_bisection(self):
+        """ Solve equation (22) for "d" using the bisection method. The initial guess is d = 0. """
 
         # We know the shape of fct_of_d(): For positive "d", it looks like
         # a "U". If the lowest part of the function is negative, there is a root,
@@ -405,8 +474,21 @@ class PotentialMapping(NonLinearMapping):
     #
 
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
+        # Initialize generic mapping
         NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
-        #self.d = self.d_newton()
+
+        # Needed parameters for electrostatic potential mapping.
         self.d = self.d_bisection()
         self.A = self.d / self.dxmin
 
@@ -418,47 +500,80 @@ class PotentialMapping(NonLinearMapping):
     #
 
     def Asserts(self):
+        """
+            Verify specific parameters.
+        """
+
         j = self.A * numpy.log((self.x0-self.xmin)/self.d) + self.imin
         assert(abs(self.i_x0md - j) < 1.0e-10)
+
+        # Verify generic parameters
         NonLinearMapping.Asserts(self)
     #
 
     def Print(self):
+        """
+            Print specific mapping parameters.
+        """
+        # Print generic parameters
         NonLinearMapping.Print(self)
     #
 
     def Calculate_i1(self, x):
+        """ Calculate i1(x) (region 1). See equation (21a). """
         return self.A * numpy.log((self.x0 - self.xmin) / (self.x0 - x)) + self.imin
     def Calculate_i3(self, x):
+        """ Calculate i3(x) (region 3). See equation (21c). """
         return self.A * numpy.log((x - self.x0) / self.d) + self.imin
     #
 
     def Calculate_x1(self, i):
+        """ Calculate x1(i) (region 1). See equation (23a). """
         return self.x0 + (self.xmin - self.x0)*numpy.exp((self.imin - i)/self.A)
     def Calculate_x3(self, i):
+        """ Calculate x3(i) (region 3). See equation (23c). """
         return self.d * (numpy.exp((i-self.i_x0pd) / self.A) - 1.0) + self.xmin
     #
 
     def Calculate_dx1di(self, i):
+        """ Calculate del x1 / del i (region 1). """
         return -(self.xmin - self.x0)*numpy.exp((self.imin - i) / self.A) / self.A
     def Calculate_dx3di(self, i):
+        """ Calculate del x3 / del i (region 3). """
         return self.d/self.A * numpy.exp((i-self.i_x0pd)/self.A)
     #
 
     def Calculate_d2x1di2(self, i):
+        """ Calculate del^2 x1 / del i^2 (region 1). """
         return (self.xmin - self.x0)*numpy.exp(-i / self.A) / self.A**2
     def Calculate_d2x3di2(self, i):
+        """ Calculate del^2 x3 / del i^2 (region 3). """
         return self.d/self.A**2 * numpy.exp((i-self.i_x0pd)/self.A)
     #
 # class PotentialMapping(NonLinearMapping):
 
 # ***************************************************************************
 class FieldMapping(NonLinearMapping):
-    # Mapping based on Electric Field
-    # See notes.git/xournal/20101112_13h00_Mapping_Field.xoj
+    """
+        Mapping with electrostatic field as source function S(x'). See equation (15).
+    """
+
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
+        # Initialize generic mapping
         NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
 
+        # Needed parameters for electrostatic field mapping.
         tmp = 1.0/(self.xmax - self.x0) + 1.0/(self.x0 - self.xmin)
         discriminant = 4.0 - tmp*self.imax*self.dxmin
         assert(discriminant > 0.0)
@@ -474,46 +589,81 @@ class FieldMapping(NonLinearMapping):
     #
 
     def Asserts(self):
+        """
+            Verify specific parameters.
+        """
+
+        # Verify generic parameters
         NonLinearMapping.Asserts(self)
     #
 
     def Print(self):
+        """
+            Print specific mapping parameters.
+        """
+
         print "d1    =", self.d1
         print "d2    =", self.d2
+
+        # Print generic parameters
         NonLinearMapping.Print(self)
 
     def Calculate_i1(self, x):
+        """ Calculate i1(x) (region 1). """
         return self.A * ( 1.0/(self.x0 - x) - 1.0/(self.x0 - self.xmin) )
     def Calculate_i3(self, x):
+        """ Calculate i3(x) (region 3). """
         return self.A * ( 1.0/(self.x0 - x) + 1.0/self.d )
     #
 
     def Calculate_x1(self, i):
+        """ Calculate x1(i) (region 1). """
         return self.x0 - self.A / (i + self.A/(self.x0-self.xmin))
     def Calculate_x3(self, i):
-        #return self.x0 - 1.0 / ( (i-self.i_x0pd)/self.A - 1.0/self.d ) - (self.x0+self.d)
+        """ Calculate x3(i) (region 3). """
         return - 1.0 / ( (i-self.i_x0pd)/self.A - 1.0/self.d ) - self.d
     #
 
     def Calculate_dx1di(self, i):
+        """ Calculate del x1 / del i (region 1). """
         return self.A / (self.A/(self.x0 - self.xmin) + i)**2
     def Calculate_dx3di(self, i):
+        """ Calculate del x3 / del i (region 3). """
         return 1.0 / (self.A * ( (i-self.i_x0pd)/self.A - 1.0/self.d )**2)
     #
 
     def Calculate_d2x1di2(self, i):
+        """ Calculate del^2 x1 / del i^2 (region 1). """
         return -2.0*self.A / (self.A/(self.x0 - self.xmin) + i)**3
     def Calculate_d2x3di2(self, i):
+        """ Calculate del^2 x3 / del i^2 (region 3). """
         return -2.0 / (self.A**2 * ( (i-self.i_x0pd)/self.A - 1.0/self.d )**3)
     #
 #class FieldMapping(NonLinearMapping):
 
 # ***************************************************************************
 class LinearMapping(NonLinearMapping):
-    # Linear Mapping
+    """
+        Linear mapping class. Linear mapping is achieved by
+        making the linear region 2 encompass the whole (sub)domain.
+    """
+
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
+        # Initialize generic mapping
         NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
 
+        # Needed parameters for linear mapping.
         self.A  = 1.0e100 # Just to shut up Asserts(), not used anywhere
         self.x0 = (self.xmax + self.xmin) / 2.0
         self.d  = self.xmax - self.x0
@@ -528,18 +678,30 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Asserts(self):
+        """
+            Verify specific parameters.
+        """
+
+        # Verify generic parameters
         NonLinearMapping.Asserts(self)
     #
 
     def Print(self):
+        """
+            Print specific mapping parameters.
+        """
+
+        # Print generic parameters
         NonLinearMapping.Print(self)
 
     def Calculate_i1(self, x):
+        """ Calculate i1(x) (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(x)))
         except:
             return 0.0
     def Calculate_i3(self, x):
+        """ Calculate i3(x) (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(x)))
         except:
@@ -547,11 +709,13 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Calculate_x1(self, i):
+        """ Calculate x1(i) (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     def Calculate_x3(self, i):
+        """ Calculate x3(i) (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
@@ -559,11 +723,13 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Calculate_dx1di(self, i):
+        """ Calculate del x1 / del i (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     def Calculate_dx3di(self, i):
+        """ Calculate del x3 / del i (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
@@ -571,19 +737,22 @@ class LinearMapping(NonLinearMapping):
     #
 
     def Calculate_d2x1di2(self, i):
+        """ Calculate del^2 x1 / del i^2 (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     def Calculate_d2x3di2(self, i):
+        """ Calculate del^2 x3 / del i^2 (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
             return numpy.zeros((len(i)))
         except:
             return 0.0
     #
-#class FieldMapping(NonLinearMapping):
+#class LinearMapping(NonLinearMapping):
 
 class Subdomain:
+    """ Class to ease up subdomain boundaries """
     def __init__(self):
         self.xmin = 0.0
         self.xmax = 0.0
@@ -603,8 +772,22 @@ class Subdomain:
 
 
 # ***************************************************************************
-def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None, x0____ = None, x0_p_d = None, xmaxs = None, ias = None, ibs = None):
-    from scipy import interpolate
+def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
+                      x0_p_d = None, i_x0md = None, i_x0pd = None):
+    """
+        Calculate mapping of a domain using given parameters.
+        Input arguments:
+            xmin:   Minimum value of domain's x positions
+            xmax:   Maximum value of domain's x positions
+            ni:     Total number of cells
+            dxmin:  Minimum cell size
+            x0s:    List containing ions location
+        Output arguments:
+            x0_m_d: List containing the boundary locations between regions 1 and 2 of a subdomain's region (x0 - d). Useful for plotting.
+            x0_p_d: List containing the boundary locations between regions 2 and 3 of a subdomain's region (x0 + d). Useful for plotting.
+            i_x0md: List containing i(x0 - d) for each ion. Useful for plotting.
+            i_x0pd: List containing i(x0 + d) for each ion. Useful for plotting.
+    """
 
     if (x0s == None):
         nb_ions = 1
@@ -744,16 +927,12 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None, x0
 
         if (x0_m_d != None):
             x0_m_d.append(x0s[n]-mapping_obj.d)
-        if (x0____ != None):
-            x0____.append(x0s[n])
         if (x0_p_d != None):
             x0_p_d.append(x0s[n]+mapping_obj.d)
-        if (xmaxs != None):
-            xmaxs.append(xstop)
-        if (ias != None):
-            ias.append(mapping_obj.i_x0md)
-        if (ibs != None):
-            ibs.append(mapping_obj.i_x0pd)
+        if (i_x0md != None):
+            i_x0md.append(mapping_obj.i_x0md)
+        if (i_x0pd != None):
+            i_x0pd.append(mapping_obj.i_x0pd)
 
         i   = numpy.concatenate((i,     mapping_obj.Get_i()+imax_prev_ion))
         x   = numpy.concatenate((x,     mapping_obj.Get_x()+xmax_prev_ion))
@@ -788,247 +967,250 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None, x0
     #sys.exit(0)
 
     return i, x, dx, ddx, ii, xx, dxx, ddxx
+# def mapping_nonlinear()
+
+
+# ***************************************************************************
+def main():
+    show_figure_mapping_ix  = False
+    show_figure_mapping_xi  = True
+    show_figure_all_mapping = False
+
+    nb_ions = 3
+    xmin = 0.0
+    xmax = 10.0
+    ni = 50.0
+
+    distance = 2.0 # Distance between each ions [bohr]
+
+
+    dxmin = 0.05
+
+    ni = float(ni)
+
+    # Set ions' locations
+    x0s = numpy.zeros((nb_ions), dtype=numpy.float64)
+    Zs  = numpy.ones((nb_ions), dtype=numpy.float64)
+    xmiddle = (xmin + xmax) / 2.0
+    xstart = xmiddle - (nb_ions * distance / 2.0)
+    xcm = 0.0
+    for n in xrange(nb_ions):
+        x0s[n] = (numpy.float64(n) * distance)
+        xcm += x0s[n]
+    xcm /= nb_ions
+    for n in xrange(nb_ions):
+        x0s[n] += -xcm + xmiddle
+
+    x0s = [3.0, 5.0, 8.0]
+    print "x0s =", x0s
+
+    x0_m_d = []
+    x0_p_d = []
+    i_x0md = []
+    i_x0pd = []
+
+    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0_p_d, i_x0md, i_x0pd)
+
+    #print "x0_m_d = ", x0_m_d
+    #print "x0_p_d = ", x0_p_d
+
+    # ***************************************************************************
+    # Plot the inverse mapping i(x)
+    if (show_figure_mapping_ix):
+        fig = plt.figure()
+        axprops = dict()
+
+        ax1 = plt.subplot(111)
+        plt.plot(xx, ii, label="Continuous")
+        plt.plot(x, i, "xr", label="Discrete (integers)")
+        plt.xlabel(r"$x$ (Bohr)")
+        plt.ylabel(r"$i$")
+        #plt.legend(loc="upper left")
+
+        for j in xrange(len(x0_m_d)):
+            plt.plot([x0_m_d[j], x0_m_d[j]], [0.0, ni-1.0], ':k')
+            plt.plot([x0_p_d[j], x0_p_d[j]], [0.0, ni-1.0], ':k')
+
+        #for j in xrange(len(i_x0md)):
+            #plt.plot([xmin, xmax], [i_x0md[j], i_x0md[j]], ':k')
+            #plt.plot([xmin, xmax], [i_x0pd[j], i_x0pd[j]], ':k')
+
+        arrow_length = 0.3
+        head_length  = arrow_length/4.0
+        gap = head_length / 2.0
+        alignment = {'horizontalalignment':'center', 'verticalalignment':'center'}
+        #alpha = 0.75
+        alpha = 1.0
+        arrow_y = 3.0*ni/4.0
+        for ai in xrange(nb_ions):
+            if (ai == nb_ions-1):
+                arrow_y = 1.0*ni/4.0
+            plt.arrow(x0_m_d[ai]-arrow_length-head_length-gap, arrow_y,  arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
+            plt.arrow(x0_p_d[ai]+arrow_length+head_length+gap, arrow_y, -arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
+            plt.text(x0s[ai], arrow_y, r'$2d_' + str(ai) + '$', **alignment)
+
+        ## Add ions' positions to xlabels
+        xaxis, xaxis_label = plt.xticks()
+        xaxis_label = [0]*len(xaxis)
+        for ai in xrange(len(xaxis)):
+            #print "ai = ", ai
+            if (str('%.0f' % xaxis[ai]) == "8"):
+                xaxis_label[ai] = r''
+                continue
+            xaxis_label[ai] = r'$'+str('%.0f' % xaxis[ai])+'$'
+        for x0i in xrange(len(x0s)):
+            xaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
+            xaxis       = numpy.append(xaxis,       x0s[x0i])
+        plt.xticks(xaxis, xaxis_label)
+
+        ax1.set_xlim((xmin, xmax))
+        ax1.set_ylim((0.0, ni-1.0))
+
+        # By explicitly setting the xaxis labels, matplotlib will fail to detect
+        # the mouse position (what's reported in the lower right corner of the window).
+        # So clone the axis (and hide it), set the right limits so a mouse over
+        # will correctly report the position.
+        old_xaxis = plt.twiny()
+        plt.setp(old_xaxis.get_xticklabels(), visible=False)
+        old_xaxis.set_xlim((xmin, xmax))
+        old_xaxis.set_ylim((0.0, ni-1.0))
+
+        #matplotlib_params.savefigure(fig, "figure1_mapping_inverse")
+
+
+
+    # ***************************************************************************
+    # Plot the mapping x(i)
+    if (show_figure_mapping_xi):
+        fig = plt.figure()
+        axprops = dict()
+
+        ax1 = plt.subplot(111)
+        plt.plot(ii, xx, label="Continuous")
+        plt.plot(i, x, "xr", label="Discrete (integers)")
+        plt.xlabel(r"$i$")
+        plt.ylabel(r"$x$ (Bohr)")
+        #plt.legend(loc="upper left")
+
+        assert(nb_ions == len(x0_m_d))
+        assert(nb_ions == len(i_x0md))
+        assert(nb_ions == len(i_x0pd))
+
+        hl = 3.0 * ii[-1] / 32.0
+        vl = xx[-1] / 8.0
+        # Horizontal lines
+        for j in xrange(nb_ions):
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0_m_d[j], x0_m_d[j]], ':k')
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0_p_d[j], x0_p_d[j]], ':k')
+        # Vertical lines
+        for j in xrange(nb_ions):
+            plt.plot([i_x0md[j], i_x0md[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
+            plt.plot([i_x0pd[j], i_x0pd[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
+
+        # Add arrows surrounding linear regions
+        arrow_length = (xmax-xmin)/100.0*7.0 # 7% of figure's vertical axis range
+        head_length  = arrow_length/2.0
+        gap = head_length / 2.0
+        #alpha = 0.75
+        alpha = 1.0
+        for j in xrange(nb_ions):
+            #arrow_x = (ni/16.0) * (1.0 + (ai%2))
+            arrow_x = i_x0md[j] - (15.0*hl/16.0)
+            plt.arrow(arrow_x, x0_m_d[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+            plt.arrow(arrow_x, x0_p_d[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+            plt.text( arrow_x, x0s[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
+
+        # Add ions' positions to ylabels
+        yaxis, yaxis_label = plt.yticks()
+        yaxis_label = [0]*len(yaxis)
+        for ai in xrange(len(yaxis)):
+            #print "ai = ", ai
+            if (str('%.0f' % yaxis[ai]) == "8"):
+                yaxis_label[ai] = r''
+                continue
+            yaxis_label[ai] = r'$'+str('%.0f' % yaxis[ai])+'$'
+        for x0i in xrange(len(x0s)):
+            #yaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
+            yaxis_label.append(r'$x_{0,' + str(x0i) + r'}$')
+            yaxis       = numpy.append(yaxis,       x0s[x0i])
+        plt.yticks(yaxis, yaxis_label)
+
+        ax1.set_ylim((xmin, xmax))
+        ax1.set_xlim((0.0, ni-1.0))
+
+        # By explicitly setting the yaxis labels, matplotlib will fail to detect
+        # the mouse's vertical position (what's reported in the lower right corner of the window).
+        # So clone the axis (and hide it), set the right limits so a mouse over
+        # will correctly report the position.
+        old_yaxis = plt.twinx()
+        plt.setp(old_yaxis.get_yticklabels(), visible=False)
+        old_yaxis.set_ylim((xmin, xmax))
+
+        xaxis, xaxis_label = plt.xticks()
+        xaxis[-1] = int(ii[-1])
+        plt.xticks(xaxis)
+
+        #matplotlib_params.savefigure(fig, "figure1_mapping")
+
+
+    # ***************************************************************************
+    if (show_figure_all_mapping):
+        fig = plt.figure()
+        axprops = dict()
+
+        im_x0       = 0.125
+        im_y0       = 0.125
+        im_width    = 0.85
+        #im_height   = 0.266667
+        im_height   = 1.0/3.0 - 1.0/15.0
+        im_gap      = 0.0
+
+        ax1 = fig.add_axes([im_x0, im_y0+2*(im_height+im_gap), im_width, im_height], **axprops)
+        axprops['sharex'] = ax1
+        plt.plot(ii, xx, label=r'$x(i)$ (continuous)')
+        plt.plot(i, x, 'xr', label=r'$x(i)$ (discrete)')
+        for n in xrange(nb_ions):
+            plt.plot([0.0, ii.max()], [x0_m_d[n], x0_m_d[n]], ':k')
+            plt.plot([0.0, ii.max()], [x0s[n],    x0s[n]], ':k')
+            plt.plot([0.0, ii.max()], [x0_p_d[n], x0_p_d[n]], ':k')
+        for j in xrange(len(i_x0md)):
+            plt.plot([i_x0md[j], i_x0md[j]], [xmin, xmax], ':k')
+            plt.plot([i_x0pd[j], i_x0pd[j]], [xmin, xmax], ':k')
+        ax1.set_ylim((xmin, xmax))
+        plt.grid()
+        plt.ylabel(r"$x$")
+        plt.legend()
+
+        ax2 = fig.add_axes([im_x0, im_y0+im_height+im_gap, im_width, im_height], **axprops)
+        plt.plot(ii, dxx, '-b', label=r'$J_1(i)$ (continuous)')
+        plt.plot(i, J1, 'xr', label=r'$J_1(i)$ (discrete)')
+        dii = numpy.concatenate(([ii[1]-ii[0]],ii[1:-1]-ii[0:-2],[ii[-2]-ii[-1]]))
+        plt.plot(ii, numpy.gradient(xx, dii), ':m', label=r"$\frac{\Delta x(i)}{\Delta i}$")
+        if (dxx.max() != 0.0):
+            ax2.set_yscale('log')
+        plt.grid()
+        plt.ylabel(r"$J_1$")
+        plt.legend()
+
+        ax3 = fig.add_axes([im_x0, im_y0, im_width, im_height], **axprops)
+        plt.plot(ii, ddxx)
+        plt.plot(i, J2, 'xr')
+        plt.plot(ii, numpy.gradient(dxx, dii), ':m')
+        plt.xlabel(r"$i$")
+        plt.ylabel(r"$J_2$")
+        plt.grid()
+        ax3.set_ylim((-5.0, 5.0))
+
+        for ax in ax1, ax2:
+            plt.setp(ax.get_xticklabels(), visible=False)
+        for ax in ax1, ax2, ax3:
+            ax.set_xlim((0.0, ni-1.0))
+
+    plt.show()
+# def main()
+
+
+if __name__ == "__main__":
+    main()
 #
 
-
-# ***************************************************************************
-show_figure_mapping_ix  = False
-show_figure_mapping_xi  = True
-show_figure_all_mapping = False
-
-nb_ions = 3
-xmin = 0.0
-xmax = 10.0
-ni = 50.0
-
-distance = 2.0 # Distance between each ions [bohr]
-
-
-dxmin = 0.05
-
-ni = float(ni)
-
-# Set ions' locations
-x0s = numpy.zeros((nb_ions), dtype=numpy.float64)
-Zs  = numpy.ones((nb_ions), dtype=numpy.float64)
-xmiddle = (xmin + xmax) / 2.0
-xstart = xmiddle - (nb_ions * distance / 2.0)
-xcm = 0.0
-for n in xrange(nb_ions):
-    x0s[n] = (numpy.float64(n) * distance)
-    xcm += x0s[n]
-xcm /= nb_ions
-for n in xrange(nb_ions):
-    x0s[n] += -xcm + xmiddle
-
-x0s = [3.0, 5.0, 8.0]
-print "x0s =", x0s
-
-x0_m_d = []
-x0____ = []
-x0_p_d = []
-ias    = []
-ibs    = []
-xmaxs  = []
-
-i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0____, x0_p_d, xmaxs, ias, ibs)
-
-#print "x0_m_d = ", x0_m_d
-#print "x0____ = ", x0____
-#print "x0_p_d = ", x0_p_d
-
-# ***************************************************************************
-# Plot the inverse mapping i(x)
-if (show_figure_mapping_ix):
-    fig = plt.figure()
-    axprops = dict()
-
-    ax1 = plt.subplot(111)
-    plt.plot(xx, ii, label="Continuous")
-    plt.plot(x, i, "xr", label="Discrete (integers)")
-    plt.xlabel(r"$x$ (Bohr)")
-    plt.ylabel(r"$i$")
-    #plt.legend(loc="upper left")
-
-    for j in xrange(len(x0_m_d)):
-        plt.plot([x0_m_d[j], x0_m_d[j]], [0.0, ni-1.0], ':k')
-        #plt.plot([x0____[j], x0____[j]], [0.0, ni-1.0], '--k')
-        plt.plot([x0_p_d[j], x0_p_d[j]], [0.0, ni-1.0], ':k')
-        #plt.plot([xmaxs[j], xmaxs[j]], [0.0, ni-1.0], '-r')
-
-    #for j in xrange(len(ias)):
-        #plt.plot([xmin, xmax], [ias[j], ias[j]], ':k')
-        #plt.plot([xmin, xmax], [ibs[j], ibs[j]], ':k')
-
-    arrow_length = 0.3
-    head_length  = arrow_length/4.0
-    gap = head_length / 2.0
-    alignment = {'horizontalalignment':'center', 'verticalalignment':'center'}
-    #alpha = 0.75
-    alpha = 1.0
-    arrow_y = 3.0*ni/4.0
-    for ai in xrange(nb_ions):
-        if (ai == nb_ions-1):
-            arrow_y = 1.0*ni/4.0
-        plt.arrow(x0_m_d[ai]-arrow_length-head_length-gap, arrow_y,  arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
-        plt.arrow(x0_p_d[ai]+arrow_length+head_length+gap, arrow_y, -arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
-        plt.text(x0____[ai], arrow_y, r'$2d_' + str(ai) + '$', **alignment)
-
-    ## Add ions' positions to xlabels
-    xaxis, xaxis_label = plt.xticks()
-    xaxis_label = [0]*len(xaxis)
-    for ai in xrange(len(xaxis)):
-        #print "ai = ", ai
-        if (str('%.0f' % xaxis[ai]) == "8"):
-            xaxis_label[ai] = r''
-            continue
-        xaxis_label[ai] = r'$'+str('%.0f' % xaxis[ai])+'$'
-    for x0i in xrange(len(x0s)):
-        xaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
-        xaxis       = numpy.append(xaxis,       x0s[x0i])
-    plt.xticks(xaxis, xaxis_label)
-
-    ax1.set_xlim((xmin, xmax))
-    ax1.set_ylim((0.0, ni-1.0))
-
-    # By explicitly setting the xaxis labels, matplotlib will fail to detect
-    # the mouse position (what's reported in the lower right corner of the window).
-    # So clone the axis (and hide it), set the right limits so a mouse over
-    # will correctly report the position.
-    old_xaxis = plt.twiny()
-    plt.setp(old_xaxis.get_xticklabels(), visible=False)
-    old_xaxis.set_xlim((xmin, xmax))
-    old_xaxis.set_ylim((0.0, ni-1.0))
-
-    #matplotlib_params.savefigure(fig, "figure1_mapping_inverse")
-
-
-
-# ***************************************************************************
-# Plot the mapping x(i)
-if (show_figure_mapping_xi):
-    fig = plt.figure()
-    axprops = dict()
-
-    ax1 = plt.subplot(111)
-    plt.plot(ii, xx, label="Continuous")
-    plt.plot(i, x, "xr", label="Discrete (integers)")
-    plt.xlabel(r"$i$")
-    plt.ylabel(r"$x$ (Bohr)")
-    #plt.legend(loc="upper left")
-
-    assert(nb_ions == len(x0_m_d))
-    assert(nb_ions == len(ias))
-    assert(nb_ions == len(ibs))
-
-    hl = 3.0 * ii[-1] / 32.0
-    vl = xx[-1] / 8.0
-    # Horizontal lines
-    for j in xrange(nb_ions):
-        plt.plot([ias[j]-hl, ibs[j]+hl], [x0_m_d[j], x0_m_d[j]], ':k')
-        plt.plot([ias[j]-hl, ibs[j]+hl], [x0_p_d[j], x0_p_d[j]], ':k')
-    # Vertical lines
-    for j in xrange(nb_ions):
-        plt.plot([ias[j], ias[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
-        plt.plot([ibs[j], ibs[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
-
-    # Add arrows surrounding linear regions
-    arrow_length = (xmax-xmin)/100.0*7.0 # 7% of figure's vertical axis range
-    head_length  = arrow_length/2.0
-    gap = head_length / 2.0
-    #alpha = 0.75
-    alpha = 1.0
-    for j in xrange(nb_ions):
-        #arrow_x = (ni/16.0) * (1.0 + (ai%2))
-        arrow_x = ias[j] - (15.0*hl/16.0)
-        plt.arrow(arrow_x, x0_m_d[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-        plt.arrow(arrow_x, x0_p_d[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-        plt.text( arrow_x, x0____[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
-
-    # Add ions' positions to ylabels
-    yaxis, yaxis_label = plt.yticks()
-    yaxis_label = [0]*len(yaxis)
-    for ai in xrange(len(yaxis)):
-        #print "ai = ", ai
-        if (str('%.0f' % yaxis[ai]) == "8"):
-            yaxis_label[ai] = r''
-            continue
-        yaxis_label[ai] = r'$'+str('%.0f' % yaxis[ai])+'$'
-    for x0i in xrange(len(x0s)):
-        #yaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
-        yaxis_label.append(r'$x_{0,' + str(x0i) + r'}$')
-        yaxis       = numpy.append(yaxis,       x0s[x0i])
-    plt.yticks(yaxis, yaxis_label)
-
-    ax1.set_ylim((xmin, xmax))
-    ax1.set_xlim((0.0, ni-1.0))
-
-    # By explicitly setting the yaxis labels, matplotlib will fail to detect
-    # the mouse's vertical position (what's reported in the lower right corner of the window).
-    # So clone the axis (and hide it), set the right limits so a mouse over
-    # will correctly report the position.
-    old_yaxis = plt.twinx()
-    plt.setp(old_yaxis.get_yticklabels(), visible=False)
-    old_yaxis.set_ylim((xmin, xmax))
-
-    xaxis, xaxis_label = plt.xticks()
-    xaxis[-1] = int(ii[-1])
-    plt.xticks(xaxis)
-
-    #matplotlib_params.savefigure(fig, "figure1_mapping")
-
-
-# ***************************************************************************
-if (show_figure_all_mapping):
-    fig = plt.figure()
-    axprops = dict()
-
-    im_x0       = 0.125
-    im_y0       = 0.125
-    im_width    = 0.85
-    #im_height   = 0.266667
-    im_height   = 1.0/3.0 - 1.0/15.0
-    im_gap      = 0.0
-
-    ax1 = fig.add_axes([im_x0, im_y0+2*(im_height+im_gap), im_width, im_height], **axprops)
-    axprops['sharex'] = ax1
-    plt.plot(ii, xx, label=r'$x(i)$ (continuous)')
-    plt.plot(i, x, 'xr', label=r'$x(i)$ (discrete)')
-    for n in xrange(nb_ions):
-        plt.plot([0.0, ii.max()], [x0_m_d[n], x0_m_d[n]], ':k')
-        plt.plot([0.0, ii.max()], [x0____[n], x0____[n]], ':k')
-        plt.plot([0.0, ii.max()], [x0_p_d[n], x0_p_d[n]], ':k')
-    for j in xrange(len(ias)):
-        plt.plot([ias[j], ias[j]], [xmin, xmax], ':k')
-        plt.plot([ibs[j], ibs[j]], [xmin, xmax], ':k')
-    ax1.set_ylim((xmin, xmax))
-    plt.grid()
-    plt.ylabel(r"$x$")
-    plt.legend()
-
-    ax2 = fig.add_axes([im_x0, im_y0+im_height+im_gap, im_width, im_height], **axprops)
-    plt.plot(ii, dxx, '-b', label=r'$J_1(i)$ (continuous)')
-    plt.plot(i, J1, 'xr', label=r'$J_1(i)$ (discrete)')
-    dii = numpy.concatenate(([ii[1]-ii[0]],ii[1:-1]-ii[0:-2],[ii[-2]-ii[-1]]))
-    plt.plot(ii, numpy.gradient(xx, dii), ':m', label=r"$\frac{\Delta x(i)}{\Delta i}$")
-    if (dxx.max() != 0.0):
-        ax2.set_yscale('log')
-    plt.grid()
-    plt.ylabel(r"$J_1$")
-    plt.legend()
-
-    ax3 = fig.add_axes([im_x0, im_y0, im_width, im_height], **axprops)
-    plt.plot(ii, ddxx)
-    plt.plot(i, J2, 'xr')
-    plt.plot(ii, numpy.gradient(dxx, dii), ':m')
-    plt.xlabel(r"$i$")
-    plt.ylabel(r"$J_2$")
-    plt.grid()
-    ax3.set_ylim((-5.0, 5.0))
-
-    for ax in ax1, ax2:
-        plt.setp(ax.get_xticklabels(), visible=False)
-    for ax in ax1, ax2, ax3:
-        ax.set_xlim((0.0, ni-1.0))
-
-plt.show()
