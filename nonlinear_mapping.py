@@ -554,11 +554,26 @@ class PotentialMapping(NonLinearMapping):
 
 # ***************************************************************************
 class FieldMapping(NonLinearMapping):
-    # Mapping based on Electric Field
-    # See notes.git/xournal/20101112_13h00_Mapping_Field.xoj
+    """
+        Mapping with electrostatic field as source function S(x'). See equation (15).
+    """
+
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
+        # Initialize generic mapping
         NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
 
+        # Needed parameters for electrostatic field mapping.
         tmp = 1.0/(self.xmax - self.x0) + 1.0/(self.x0 - self.xmin)
         discriminant = 4.0 - tmp*self.imax*self.dxmin
         assert(discriminant > 0.0)
@@ -574,36 +589,54 @@ class FieldMapping(NonLinearMapping):
     #
 
     def Asserts(self):
+        """
+            Verify specific parameters.
+        """
+
+        # Verify generic parameters
         NonLinearMapping.Asserts(self)
     #
 
     def Print(self):
+        """
+            Print specific mapping parameters.
+        """
+
         print "d1    =", self.d1
         print "d2    =", self.d2
+
+        # Print generic parameters
         NonLinearMapping.Print(self)
 
     def Calculate_i1(self, x):
+        """ Calculate i1(x) (region 1). """
         return self.A * ( 1.0/(self.x0 - x) - 1.0/(self.x0 - self.xmin) )
     def Calculate_i3(self, x):
+        """ Calculate i3(x) (region 3). """
         return self.A * ( 1.0/(self.x0 - x) + 1.0/self.d )
     #
 
     def Calculate_x1(self, i):
+        """ Calculate x1(i) (region 1). """
         return self.x0 - self.A / (i + self.A/(self.x0-self.xmin))
     def Calculate_x3(self, i):
-        #return self.x0 - 1.0 / ( (i-self.i_x0pd)/self.A - 1.0/self.d ) - (self.x0+self.d)
+        """ Calculate x3(i) (region 3). """
         return - 1.0 / ( (i-self.i_x0pd)/self.A - 1.0/self.d ) - self.d
     #
 
     def Calculate_dx1di(self, i):
+        """ Calculate del x1 / del i (region 1). """
         return self.A / (self.A/(self.x0 - self.xmin) + i)**2
     def Calculate_dx3di(self, i):
+        """ Calculate del x3 / del i (region 3). """
         return 1.0 / (self.A * ( (i-self.i_x0pd)/self.A - 1.0/self.d )**2)
     #
 
     def Calculate_d2x1di2(self, i):
+        """ Calculate del^2 x1 / del i^2 (region 1). """
         return -2.0*self.A / (self.A/(self.x0 - self.xmin) + i)**3
     def Calculate_d2x3di2(self, i):
+        """ Calculate del^2 x3 / del i^2 (region 3). """
         return -2.0 / (self.A**2 * ( (i-self.i_x0pd)/self.A - 1.0/self.d )**3)
     #
 #class FieldMapping(NonLinearMapping):
