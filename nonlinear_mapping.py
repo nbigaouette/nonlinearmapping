@@ -774,6 +774,20 @@ class Subdomain:
 # ***************************************************************************
 def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
                       x0_p_d = None, i_x0md = None, i_x0pd = None):
+    """
+        Calculate mapping of a domain using given parameters.
+        Input arguments:
+            xmin:   Minimum value of domain's x positions
+            xmax:   Maximum value of domain's x positions
+            ni:     Total number of cells
+            dxmin:  Minimum cell size
+            x0s:    List containing ions location
+        Output arguments:
+            x0_m_d: List containing the boundary locations between regions 1 and 2 of a subdomain's region (x0 - d). Useful for plotting.
+            x0_p_d: List containing the boundary locations between regions 2 and 3 of a subdomain's region (x0 + d). Useful for plotting.
+            i_x0md: List containing i(x0 - d) for each ion. Useful for plotting.
+            i_x0pd: List containing i(x0 + d) for each ion. Useful for plotting.
+    """
 
     if (x0s == None):
         nb_ions = 1
