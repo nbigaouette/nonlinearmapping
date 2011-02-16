@@ -945,7 +945,6 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
 
 # ***************************************************************************
 def main():
-    show_figure_mapping_ix  = False
     show_figure_mapping_xi  = True
     show_figure_all_mapping = False
 
@@ -983,74 +982,6 @@ def main():
     i_x0pd = []
 
     i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0_p_d, i_x0md, i_x0pd)
-
-    #print "x0_m_d = ", x0_m_d
-    #print "x0_p_d = ", x0_p_d
-
-    # ***************************************************************************
-    # Plot the inverse mapping i(x)
-    if (show_figure_mapping_ix):
-        fig = plt.figure()
-        axprops = dict()
-
-        ax1 = plt.subplot(111)
-        plt.plot(xx, ii, label="Continuous")
-        plt.plot(x, i, "xr", label="Discrete (integers)")
-        plt.xlabel(r"$x$ (Bohr)")
-        plt.ylabel(r"$i$")
-        #plt.legend(loc="upper left")
-
-        for j in xrange(len(x0_m_d)):
-            plt.plot([x0_m_d[j], x0_m_d[j]], [0.0, ni-1.0], ':k')
-            plt.plot([x0_p_d[j], x0_p_d[j]], [0.0, ni-1.0], ':k')
-
-        #for j in xrange(len(i_x0md)):
-            #plt.plot([xmin, xmax], [i_x0md[j], i_x0md[j]], ':k')
-            #plt.plot([xmin, xmax], [i_x0pd[j], i_x0pd[j]], ':k')
-
-        arrow_length = 0.3
-        head_length  = arrow_length/4.0
-        gap = head_length / 2.0
-        alignment = {'horizontalalignment':'center', 'verticalalignment':'center'}
-        #alpha = 0.75
-        alpha = 1.0
-        arrow_y = 3.0*ni/4.0
-        for ai in xrange(nb_ions):
-            if (ai == nb_ions-1):
-                arrow_y = 1.0*ni/4.0
-            plt.arrow(x0_m_d[ai]-arrow_length-head_length-gap, arrow_y,  arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
-            plt.arrow(x0_p_d[ai]+arrow_length+head_length+gap, arrow_y, -arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
-            plt.text(x0s[ai], arrow_y, r'$2d_' + str(ai) + '$', **alignment)
-
-        ## Add ions' positions to xlabels
-        xaxis, xaxis_label = plt.xticks()
-        xaxis_label = [0]*len(xaxis)
-        for ai in xrange(len(xaxis)):
-            #print "ai = ", ai
-            if (str('%.0f' % xaxis[ai]) == "8"):
-                xaxis_label[ai] = r''
-                continue
-            xaxis_label[ai] = r'$'+str('%.0f' % xaxis[ai])+'$'
-        for x0i in xrange(len(x0s)):
-            xaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
-            xaxis       = numpy.append(xaxis,       x0s[x0i])
-        plt.xticks(xaxis, xaxis_label)
-
-        ax1.set_xlim((xmin, xmax))
-        ax1.set_ylim((0.0, ni-1.0))
-
-        # By explicitly setting the xaxis labels, matplotlib will fail to detect
-        # the mouse position (what's reported in the lower right corner of the window).
-        # So clone the axis (and hide it), set the right limits so a mouse over
-        # will correctly report the position.
-        old_xaxis = plt.twiny()
-        plt.setp(old_xaxis.get_xticklabels(), visible=False)
-        old_xaxis.set_xlim((xmin, xmax))
-        old_xaxis.set_ylim((0.0, ni-1.0))
-
-        #matplotlib_params.savefigure(fig, "figure1_mapping_inverse")
-
-
 
     # ***************************************************************************
     # Plot the mapping x(i)
