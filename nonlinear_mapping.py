@@ -398,9 +398,12 @@ class SqrtMapping(NonLinearMapping):
 
 # ***************************************************************************
 class PotentialMapping(NonLinearMapping):
-    # Mapping based on electrostatic potential
-    # See notes.git/xournal/20101108_17h15_Potential_Mapping.xoj
+    """
+        Mapping with electrostatic potential as source function S(x'). See equation (15).
+    """
+
     def fct_of_d(self, d):
+        """ Calculate equation (22) as a function of "d" """
         # a is box's lower bound
         # b is box's upper bound
         if (d == 0.0):
@@ -408,7 +411,11 @@ class PotentialMapping(NonLinearMapping):
             return (self.imax - self.imin)*self.dxmin
         else:
             return (self.imax - self.imin)*self.dxmin - d*( 2.0 + numpy.log( (self.x0-self.xmin)*(self.xmax-self.x0) / d**2 ) )
+        #
+    #
+
     def diff_fct_of_d(self, d):
+        """ Calculate derivative of equation (22) with respect to "d" """
         # a is box's lower bound
         # b is box's upper bound
         if (d == 0.0):
@@ -419,28 +426,8 @@ class PotentialMapping(NonLinearMapping):
             return -numpy.log( (self.x0-self.xmin)*(self.xmax-self.x0) / d**2 )
     #
 
-    def d_newton(self):
-        tolerance = 1.0e-10
-        # Initial guess
-        #d = self.xmax
-        #d = 1.0e-50
-        d = 0.0
-        f_d = self.fct_of_d(d)
-        #print "Newton's method initial guess: d =", d, " f(d) =", f_d, " diff(f,d) =", self.diff_fct_of_d(d)
-        while(abs(f_d) > tolerance):
-            d = d - self.fct_of_d(d) / self.diff_fct_of_d(d)
-            f_d = self.fct_of_d(d)
-            #print "d =", d, " f(d) =", f_d, " diff(f,d) =", self.diff_fct_of_d(d)
-
-        #print "self.fct_of_d(d="+str(d)+") =", self.fct_of_d(d)
-
-        assert(abs(self.fct_of_d(d)) < 1.0e-4)
-        assert(d > 0.0)
-
-        return d
-    #
-
     def d_bisection(self):
+        """ Solve equation (22) for "d" using the bisection method. The initial guess is d = 0. """
 
         # We know the shape of fct_of_d(): For positive "d", it looks like
         # a "U". If the lowest part of the function is negative, there is a root,
@@ -487,8 +474,21 @@ class PotentialMapping(NonLinearMapping):
     #
 
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
+        # Initialize generic mapping
         NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
-        #self.d = self.d_newton()
+
+        # Needed parameters for electrostatic potential mapping.
         self.d = self.d_bisection()
         self.A = self.d / self.dxmin
 
@@ -500,36 +500,54 @@ class PotentialMapping(NonLinearMapping):
     #
 
     def Asserts(self):
+        """
+            Verify specific parameters.
+        """
+
         j = self.A * numpy.log((self.x0-self.xmin)/self.d) + self.imin
         assert(abs(self.i_x0md - j) < 1.0e-10)
+
+        # Verify generic parameters
         NonLinearMapping.Asserts(self)
     #
 
     def Print(self):
+        """
+            Print specific mapping parameters.
+        """
+        # Print generic parameters
         NonLinearMapping.Print(self)
     #
 
     def Calculate_i1(self, x):
+        """ Calculate i1(x) (region 1). See equation (21a). """
         return self.A * numpy.log((self.x0 - self.xmin) / (self.x0 - x)) + self.imin
     def Calculate_i3(self, x):
+        """ Calculate i3(x) (region 3). See equation (21c). """
         return self.A * numpy.log((x - self.x0) / self.d) + self.imin
     #
 
     def Calculate_x1(self, i):
+        """ Calculate x1(i) (region 1). See equation (23a). """
         return self.x0 + (self.xmin - self.x0)*numpy.exp((self.imin - i)/self.A)
     def Calculate_x3(self, i):
+        """ Calculate x3(i) (region 3). See equation (23c). """
         return self.d * (numpy.exp((i-self.i_x0pd) / self.A) - 1.0) + self.xmin
     #
 
     def Calculate_dx1di(self, i):
+        """ Calculate del x1 / del i (region 1). """
         return -(self.xmin - self.x0)*numpy.exp((self.imin - i) / self.A) / self.A
     def Calculate_dx3di(self, i):
+        """ Calculate del x3 / del i (region 3). """
         return self.d/self.A * numpy.exp((i-self.i_x0pd)/self.A)
     #
 
     def Calculate_d2x1di2(self, i):
+        """ Calculate del^2 x1 / del i^2 (region 1). """
         return (self.xmin - self.x0)*numpy.exp(-i / self.A) / self.A**2
     def Calculate_d2x3di2(self, i):
+        """ Calculate del^2 x3 / del i^2 (region 3). """
         return self.d/self.A**2 * numpy.exp((i-self.i_x0pd)/self.A)
     #
 # class PotentialMapping(NonLinearMapping):
