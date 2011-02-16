@@ -773,7 +773,7 @@ class Subdomain:
 
 # ***************************************************************************
 def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
-                      x0_p_d = None, ias = None, ibs = None):
+                      x0_p_d = None, i_x0md = None, i_x0pd = None):
     from scipy import interpolate
 
     if (x0s == None):
@@ -916,10 +916,10 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
             x0_m_d.append(x0s[n]-mapping_obj.d)
         if (x0_p_d != None):
             x0_p_d.append(x0s[n]+mapping_obj.d)
-        if (ias != None):
-            ias.append(mapping_obj.i_x0md)
-        if (ibs != None):
-            ibs.append(mapping_obj.i_x0pd)
+        if (i_x0md != None):
+            i_x0md.append(mapping_obj.i_x0md)
+        if (i_x0pd != None):
+            i_x0pd.append(mapping_obj.i_x0pd)
 
         i   = numpy.concatenate((i,     mapping_obj.Get_i()+imax_prev_ion))
         x   = numpy.concatenate((x,     mapping_obj.Get_x()+xmax_prev_ion))
@@ -993,10 +993,10 @@ def main():
 
     x0_m_d = []
     x0_p_d = []
-    ias    = []
-    ibs    = []
+    i_x0md = []
+    i_x0pd = []
 
-    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0_p_d, ias, ibs)
+    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0_p_d, i_x0md, i_x0pd)
 
     #print "x0_m_d = ", x0_m_d
     #print "x0_p_d = ", x0_p_d
@@ -1018,9 +1018,9 @@ def main():
             plt.plot([x0_m_d[j], x0_m_d[j]], [0.0, ni-1.0], ':k')
             plt.plot([x0_p_d[j], x0_p_d[j]], [0.0, ni-1.0], ':k')
 
-        #for j in xrange(len(ias)):
-            #plt.plot([xmin, xmax], [ias[j], ias[j]], ':k')
-            #plt.plot([xmin, xmax], [ibs[j], ibs[j]], ':k')
+        #for j in xrange(len(i_x0md)):
+            #plt.plot([xmin, xmax], [i_x0md[j], i_x0md[j]], ':k')
+            #plt.plot([xmin, xmax], [i_x0pd[j], i_x0pd[j]], ':k')
 
         arrow_length = 0.3
         head_length  = arrow_length/4.0
@@ -1080,19 +1080,19 @@ def main():
         #plt.legend(loc="upper left")
 
         assert(nb_ions == len(x0_m_d))
-        assert(nb_ions == len(ias))
-        assert(nb_ions == len(ibs))
+        assert(nb_ions == len(i_x0md))
+        assert(nb_ions == len(i_x0pd))
 
         hl = 3.0 * ii[-1] / 32.0
         vl = xx[-1] / 8.0
         # Horizontal lines
         for j in xrange(nb_ions):
-            plt.plot([ias[j]-hl, ibs[j]+hl], [x0_m_d[j], x0_m_d[j]], ':k')
-            plt.plot([ias[j]-hl, ibs[j]+hl], [x0_p_d[j], x0_p_d[j]], ':k')
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0_m_d[j], x0_m_d[j]], ':k')
+            plt.plot([i_x0md[j]-hl, i_x0pd[j]+hl], [x0_p_d[j], x0_p_d[j]], ':k')
         # Vertical lines
         for j in xrange(nb_ions):
-            plt.plot([ias[j], ias[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
-            plt.plot([ibs[j], ibs[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
+            plt.plot([i_x0md[j], i_x0md[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
+            plt.plot([i_x0pd[j], i_x0pd[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
 
         # Add arrows surrounding linear regions
         arrow_length = (xmax-xmin)/100.0*7.0 # 7% of figure's vertical axis range
@@ -1102,7 +1102,7 @@ def main():
         alpha = 1.0
         for j in xrange(nb_ions):
             #arrow_x = (ni/16.0) * (1.0 + (ai%2))
-            arrow_x = ias[j] - (15.0*hl/16.0)
+            arrow_x = i_x0md[j] - (15.0*hl/16.0)
             plt.arrow(arrow_x, x0_m_d[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
             plt.arrow(arrow_x, x0_p_d[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
             plt.text( arrow_x, x0s[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
@@ -1160,9 +1160,9 @@ def main():
             plt.plot([0.0, ii.max()], [x0_m_d[n], x0_m_d[n]], ':k')
             plt.plot([0.0, ii.max()], [x0s[n],    x0s[n]], ':k')
             plt.plot([0.0, ii.max()], [x0_p_d[n], x0_p_d[n]], ':k')
-        for j in xrange(len(ias)):
-            plt.plot([ias[j], ias[j]], [xmin, xmax], ':k')
-            plt.plot([ibs[j], ibs[j]], [xmin, xmax], ':k')
+        for j in xrange(len(i_x0md)):
+            plt.plot([i_x0md[j], i_x0md[j]], [xmin, xmax], ':k')
+            plt.plot([i_x0pd[j], i_x0pd[j]], [xmin, xmax], ':k')
         ax1.set_ylim((xmin, xmax))
         plt.grid()
         plt.ylabel(r"$x$")
