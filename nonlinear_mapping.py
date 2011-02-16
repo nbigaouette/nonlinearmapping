@@ -772,7 +772,8 @@ class Subdomain:
 
 
 # ***************************************************************************
-def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None, x0____ = None, x0_p_d = None, xmaxs = None, ias = None, ibs = None):
+def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None,
+                      x0_p_d = None, ias = None, ibs = None):
     from scipy import interpolate
 
     if (x0s == None):
@@ -913,12 +914,8 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None, x0
 
         if (x0_m_d != None):
             x0_m_d.append(x0s[n]-mapping_obj.d)
-        if (x0____ != None):
-            x0____.append(x0s[n])
         if (x0_p_d != None):
             x0_p_d.append(x0s[n]+mapping_obj.d)
-        if (xmaxs != None):
-            xmaxs.append(xstop)
         if (ias != None):
             ias.append(mapping_obj.i_x0md)
         if (ibs != None):
@@ -995,16 +992,13 @@ def main():
     print "x0s =", x0s
 
     x0_m_d = []
-    x0____ = []
     x0_p_d = []
     ias    = []
     ibs    = []
-    xmaxs  = []
 
-    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0____, x0_p_d, xmaxs, ias, ibs)
+    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0_p_d, ias, ibs)
 
     #print "x0_m_d = ", x0_m_d
-    #print "x0____ = ", x0____
     #print "x0_p_d = ", x0_p_d
 
     # ***************************************************************************
@@ -1022,9 +1016,7 @@ def main():
 
         for j in xrange(len(x0_m_d)):
             plt.plot([x0_m_d[j], x0_m_d[j]], [0.0, ni-1.0], ':k')
-            #plt.plot([x0____[j], x0____[j]], [0.0, ni-1.0], '--k')
             plt.plot([x0_p_d[j], x0_p_d[j]], [0.0, ni-1.0], ':k')
-            #plt.plot([xmaxs[j], xmaxs[j]], [0.0, ni-1.0], '-r')
 
         #for j in xrange(len(ias)):
             #plt.plot([xmin, xmax], [ias[j], ias[j]], ':k')
@@ -1042,7 +1034,7 @@ def main():
                 arrow_y = 1.0*ni/4.0
             plt.arrow(x0_m_d[ai]-arrow_length-head_length-gap, arrow_y,  arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
             plt.arrow(x0_p_d[ai]+arrow_length+head_length+gap, arrow_y, -arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
-            plt.text(x0____[ai], arrow_y, r'$2d_' + str(ai) + '$', **alignment)
+            plt.text(x0s[ai], arrow_y, r'$2d_' + str(ai) + '$', **alignment)
 
         ## Add ions' positions to xlabels
         xaxis, xaxis_label = plt.xticks()
@@ -1113,7 +1105,7 @@ def main():
             arrow_x = ias[j] - (15.0*hl/16.0)
             plt.arrow(arrow_x, x0_m_d[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
             plt.arrow(arrow_x, x0_p_d[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-            plt.text( arrow_x, x0____[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
+            plt.text( arrow_x, x0s[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
 
         # Add ions' positions to ylabels
         yaxis, yaxis_label = plt.yticks()
@@ -1166,7 +1158,7 @@ def main():
         plt.plot(i, x, 'xr', label=r'$x(i)$ (discrete)')
         for n in xrange(nb_ions):
             plt.plot([0.0, ii.max()], [x0_m_d[n], x0_m_d[n]], ':k')
-            plt.plot([0.0, ii.max()], [x0____[n], x0____[n]], ':k')
+            plt.plot([0.0, ii.max()], [x0s[n],    x0s[n]], ':k')
             plt.plot([0.0, ii.max()], [x0_p_d[n], x0_p_d[n]], ':k')
         for j in xrange(len(ias)):
             plt.plot([ias[j], ias[j]], [xmin, xmax], ':k')
