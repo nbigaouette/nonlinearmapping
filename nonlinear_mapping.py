@@ -294,130 +294,6 @@ class NonLinearMapping:
 #
 
 # ***************************************************************************
-class SqrtMapping(NonLinearMapping):
-    """
-        Mapping with square root as source function S(x'). See equation (15).
-    """
-
-    def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
-        """
-            Initialize mapping.
-            Arguments:
-                imin:   Minimum value for "i"
-                imax:   Maximum value for "i"
-                xmin:   Minimum value for "x"
-                xmax:   Maximum value for "x"
-                x0:     Location of center of interest
-                dxmin:  Minimum cell size
-        """
-
-        # Initialize generic mapping
-        NonLinearMapping.Initialize(self, imin, imax, xmin, xmax, x0, dxmin)
-
-        # Needed parameters for square root mapping.
-        if (2.0 * self.x0 > self.xmax):
-            discriminant = (numpy.sqrt(self.x0) + numpy.sqrt(self.xmax - self.x0))**2 - 2.0*self.imax*self.dxmin
-            self.u1 = ((numpy.sqrt(self.x0) + numpy.sqrt(self.xmax - self.x0)) + numpy.sqrt(discriminant)) / 2.0
-            self.u2 = ((numpy.sqrt(self.x0) + numpy.sqrt(self.xmax - self.x0)) - numpy.sqrt(discriminant)) / 2.0
-            self.d1 = self.u1**2
-            self.d2 = self.u2**2
-            self.d = self.d2
-            self.A = (self.imax - 2.0*self.d/self.dxmin) / (numpy.sqrt(self.x0) - 2.0*numpy.sqrt(self.d) + numpy.sqrt(self.xmax - self.x0))
-        elif (2.0 * self.x0 < self.xmax):
-            discriminant = (numpy.sqrt(self.xmax - self.x0) + numpy.sqrt(self.x0))**2 - 2.0*self.imax*self.dxmin
-            self.u1 = ( (numpy.sqrt(self.xmax - self.x0) + numpy.sqrt(self.x0)) + numpy.sqrt(discriminant) ) / 2.0
-            self.u2 = ( (numpy.sqrt(self.xmax - self.x0) + numpy.sqrt(self.x0)) - numpy.sqrt(discriminant) ) / 2.0
-            self.d1 = self.u1**2
-            self.d2 = self.u2**2
-            self.d = self.d2
-            self.A = (self.imax - 2.0*self.d/self.dxmin) / ( numpy.sqrt(self.xmax - self.x0) + numpy.sqrt(self.x0) - 2.0*numpy.sqrt(self.d) )
-        else:
-            discriminant = self.x0 - self.imax*self.dxmin/2.0
-            self.u1 = numpy.sqrt(self.x0) + numpy.sqrt(discriminant)
-            self.u2 = numpy.sqrt(self.x0) - numpy.sqrt(discriminant)
-            self.d1 = self.u1**2
-            self.d2 = self.u2**2
-            self.d = self.d2
-            self.A = (self.imax - 2.0*self.d/self.dxmin) / (2.0 * (numpy.sqrt(self.x0) - numpy.sqrt(self.d)))
-        #
-        self.B = self.A * numpy.sqrt(self.x0)
-        self.D = -numpy.sqrt(self.d)
-
-        NonLinearMapping.Calculate_i_x0md_i_x0pd(self)
-        NonLinearMapping.Allocate_and_Set_is(self)
-        self.Asserts()
-
-        NonLinearMapping.Calculate_Mapping(self)
-        print "ddx1 =", self.ddx1
-        print "ddx2 =", self.ddx2
-        print "ddx3 =", self.ddx3
-        print "ddx1.shape =", self.ddx1.shape," ddx2 =", self.ddx2.shape," ddx3 =", self.ddx3.shape
-    #
-
-    def Print(self):
-        """
-            Print specific mapping parameters.
-        """
-
-        print "u1    =", self.u1
-        print "u2    =", self.u2
-        print "d1    =", self.d1
-        print "d2    =", self.d2
-        print "B     =", self.B
-        print "D     =", self.D
-
-        # Print generic parameters
-        NonLinearMapping.Print(self)
-
-    def Asserts(self):
-        """
-            Verify specific parameters.
-        """
-
-        assert(not numpy.isnan(self.u1))
-        assert(not numpy.isnan(self.u2))
-        assert(not numpy.isnan(self.d1))
-        assert(not numpy.isnan(self.d2))
-        assert(not numpy.isnan(self.d))
-        assert(not numpy.isnan(self.A))
-
-        # Verify generic parameters
-        NonLinearMapping.Asserts(self)
-
-    def Calculate_i1(self, x):
-        """ Calculate i1(x) (region 1). """
-        return -self.A * numpy.sqrt(self.x0 - x) + self.B
-    def Calculate_i3(self, x):
-        """ Calculate i3(x) (region 3). """
-        return self.A * (numpy.sqrt(x - self.x0) + self.D)
-    #
-
-    def Calculate_x1(self, i):
-        """ Calculate x1(i) (region 1). """
-        return self.x0 - (numpy.sqrt(self.x0) - i/self.A)**2
-    def Calculate_x3(self, i):
-        """ Calculate x3(i) (region 3). """
-        return ((i-self.i_x0pd)/self.A - self.D)**2 - self.d
-    #
-
-    def Calculate_dx1di(self, i):
-        """ Calculate del x1 / del i (region 1). """
-        return 2.0/self.A * (numpy.sqrt(self.x0) - i/self.A)
-    def Calculate_dx3di(self, i):
-        """ Calculate del x3 / del i (region 3). """
-        return 2.0/self.A * ( (i-self.i_x0pd)/self.A - self.D )
-    #
-
-    def Calculate_d2x1di2(self, i):
-        """ Calculate del^2 x1 / del i^2 (region 1). """
-        return -2.0/self.A**2 * numpy.ones(len(i))
-    def Calculate_d2x3di2(self, i):
-        """ Calculate del^2 x3 / del i^2 (region 3). """
-        return 2.0/self.A**2 * numpy.ones(len(i))
-    #
-# class SqrtMapping(NonLinearMapping):
-
-# ***************************************************************************
 class PotentialMapping(NonLinearMapping):
     """
         Mapping with electrostatic potential as source function S(x'). See equation (15).
@@ -935,8 +811,6 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
             mapping_obj = LinearMapping()
         elif (options.mapping_type == "field"):
             mapping_obj = FieldMapping()
-        #elif (options.mapping_type == "sqrt"):
-            #mapping_obj = SqrtMapping()
         elif (options.mapping_type == "potential"):
             mapping_obj = PotentialMapping()
         else:
