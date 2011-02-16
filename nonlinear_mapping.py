@@ -10,6 +10,7 @@ parser.add_option("-v", "--verbose",            action="store_true",    dest="ve
 parser.add_option("-m", "--mapping", type=str,                          dest="mapping_type",  default="potential",  help="Mapping type. [default: %default]")
 parser.add_option("-e", "--even",               action="store_true",    dest="equal",         default=False,        help="Spread the atoms evenly in domain (overwrites -x). [default: %default]")
 parser.add_option("-x",              type=float,action="append",        dest="x0s",           default=None,         help="Ion positions [default: [3,5,8]]")
+parser.add_option("-d", "--dxmin",  type=float,                         dest="dxmin",       default=0.05,       help="Minimum cell size. [default: %default Bohr]")
 
 (options, args) = parser.parse_args()
 # ***************************************************************************
@@ -976,9 +977,6 @@ def main():
 
     distance = 2.0 # Distance between each ions [bohr]
 
-
-    dxmin = 0.05
-
     ni = float(ni)
 
     # Set ions' locations
@@ -1001,7 +999,7 @@ def main():
     i_x0md = []
     i_x0pd = []
 
-    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, i_x0md, i_x0pd, ds)
+    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, options.dxmin, x0s, i_x0md, i_x0pd, ds)
 
     print "######################################################################################################"
     print "Domain range:   [" + str(xmin) + ", " + str(xmax) + "] Bohr"
