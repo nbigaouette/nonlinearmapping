@@ -81,12 +81,12 @@ class NonLinearMapping:
         # Continuous
         self.nii    = 1e5
         if (self.i_x0md > 0.0):
-            self.ii1= numpy.arange(int(math.ceil(self.imin)),       self.i_x0md,    (self.i_x0md - self.imin)   / self.nii)
+            self.ii1= numpy.arange(int(math.ceil(self.imin)), self.i_x0md,    (self.i_x0md - self.imin)   / self.nii)
         else:
             self.ii1= numpy.asarray([])
-        self.ii2    = numpy.arange(self.i_x0md,                     self.i_x0pd,    (self.i_x0pd - self.i_x0md) / self.nii)
+        self.ii2    = numpy.arange(self.i_x0md,               self.i_x0pd,    (self.i_x0pd - self.i_x0md) / self.nii)
         if (self.i_x0pd < self.imax):
-            self.ii3= numpy.linspace(self.i_x0pd,                   self.imax,      self.nii)
+            self.ii3= numpy.linspace(self.i_x0pd,             self.imax,      self.nii)
         else:
             self.ii3= numpy.asarray([])
     #
