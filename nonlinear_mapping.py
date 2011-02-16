@@ -985,6 +985,7 @@ def main():
 
     print "Domain range:   [" + str(xmin) + ", " + str(xmax) + "] Bohr"
     print "Ions positions:", x0s, "Bohr"
+    print "Total number of cells:", int(ni)
     print "Subdomains' width 'd':", ds, "Bohr"
 
     # ***************************************************************************
