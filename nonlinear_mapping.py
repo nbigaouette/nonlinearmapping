@@ -994,7 +994,6 @@ def main():
         plt.plot(i, x, "xr", label="Discrete (integers)")
         plt.xlabel(r"$i$")
         plt.ylabel(r"$x$ (Bohr)")
-        #plt.legend(loc="upper left")
 
         assert(nb_ions == len(x0_m_d))
         assert(nb_ions == len(i_x0md))
