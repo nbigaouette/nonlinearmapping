@@ -957,7 +957,7 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None, x0
     #sys.exit(0)
 
     return i, x, dx, ddx, ii, xx, dxx, ddxx
-#
+# def mapping_nonlinear()
 
 
 # ***************************************************************************
