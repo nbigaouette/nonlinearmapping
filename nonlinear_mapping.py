@@ -961,243 +961,251 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None, x0_m_d = None, x0
 
 
 # ***************************************************************************
-show_figure_mapping_ix  = False
-show_figure_mapping_xi  = True
-show_figure_all_mapping = False
+def main():
+    show_figure_mapping_ix  = False
+    show_figure_mapping_xi  = True
+    show_figure_all_mapping = False
 
-nb_ions = 3
-xmin = 0.0
-xmax = 10.0
-ni = 50.0
+    nb_ions = 3
+    xmin = 0.0
+    xmax = 10.0
+    ni = 50.0
 
-distance = 2.0 # Distance between each ions [bohr]
-
-
-dxmin = 0.05
-
-ni = float(ni)
-
-# Set ions' locations
-x0s = numpy.zeros((nb_ions), dtype=numpy.float64)
-Zs  = numpy.ones((nb_ions), dtype=numpy.float64)
-xmiddle = (xmin + xmax) / 2.0
-xstart = xmiddle - (nb_ions * distance / 2.0)
-xcm = 0.0
-for n in xrange(nb_ions):
-    x0s[n] = (numpy.float64(n) * distance)
-    xcm += x0s[n]
-xcm /= nb_ions
-for n in xrange(nb_ions):
-    x0s[n] += -xcm + xmiddle
-
-x0s = [3.0, 5.0, 8.0]
-print "x0s =", x0s
-
-x0_m_d = []
-x0____ = []
-x0_p_d = []
-ias    = []
-ibs    = []
-xmaxs  = []
-
-i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0____, x0_p_d, xmaxs, ias, ibs)
-
-#print "x0_m_d = ", x0_m_d
-#print "x0____ = ", x0____
-#print "x0_p_d = ", x0_p_d
-
-# ***************************************************************************
-# Plot the inverse mapping i(x)
-if (show_figure_mapping_ix):
-    fig = plt.figure()
-    axprops = dict()
-
-    ax1 = plt.subplot(111)
-    plt.plot(xx, ii, label="Continuous")
-    plt.plot(x, i, "xr", label="Discrete (integers)")
-    plt.xlabel(r"$x$ (Bohr)")
-    plt.ylabel(r"$i$")
-    #plt.legend(loc="upper left")
-
-    for j in xrange(len(x0_m_d)):
-        plt.plot([x0_m_d[j], x0_m_d[j]], [0.0, ni-1.0], ':k')
-        #plt.plot([x0____[j], x0____[j]], [0.0, ni-1.0], '--k')
-        plt.plot([x0_p_d[j], x0_p_d[j]], [0.0, ni-1.0], ':k')
-        #plt.plot([xmaxs[j], xmaxs[j]], [0.0, ni-1.0], '-r')
-
-    #for j in xrange(len(ias)):
-        #plt.plot([xmin, xmax], [ias[j], ias[j]], ':k')
-        #plt.plot([xmin, xmax], [ibs[j], ibs[j]], ':k')
-
-    arrow_length = 0.3
-    head_length  = arrow_length/4.0
-    gap = head_length / 2.0
-    alignment = {'horizontalalignment':'center', 'verticalalignment':'center'}
-    #alpha = 0.75
-    alpha = 1.0
-    arrow_y = 3.0*ni/4.0
-    for ai in xrange(nb_ions):
-        if (ai == nb_ions-1):
-            arrow_y = 1.0*ni/4.0
-        plt.arrow(x0_m_d[ai]-arrow_length-head_length-gap, arrow_y,  arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
-        plt.arrow(x0_p_d[ai]+arrow_length+head_length+gap, arrow_y, -arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
-        plt.text(x0____[ai], arrow_y, r'$2d_' + str(ai) + '$', **alignment)
-
-    ## Add ions' positions to xlabels
-    xaxis, xaxis_label = plt.xticks()
-    xaxis_label = [0]*len(xaxis)
-    for ai in xrange(len(xaxis)):
-        #print "ai = ", ai
-        if (str('%.0f' % xaxis[ai]) == "8"):
-            xaxis_label[ai] = r''
-            continue
-        xaxis_label[ai] = r'$'+str('%.0f' % xaxis[ai])+'$'
-    for x0i in xrange(len(x0s)):
-        xaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
-        xaxis       = numpy.append(xaxis,       x0s[x0i])
-    plt.xticks(xaxis, xaxis_label)
-
-    ax1.set_xlim((xmin, xmax))
-    ax1.set_ylim((0.0, ni-1.0))
-
-    # By explicitly setting the xaxis labels, matplotlib will fail to detect
-    # the mouse position (what's reported in the lower right corner of the window).
-    # So clone the axis (and hide it), set the right limits so a mouse over
-    # will correctly report the position.
-    old_xaxis = plt.twiny()
-    plt.setp(old_xaxis.get_xticklabels(), visible=False)
-    old_xaxis.set_xlim((xmin, xmax))
-    old_xaxis.set_ylim((0.0, ni-1.0))
-
-    #matplotlib_params.savefigure(fig, "figure1_mapping_inverse")
+    distance = 2.0 # Distance between each ions [bohr]
 
 
+    dxmin = 0.05
 
-# ***************************************************************************
-# Plot the mapping x(i)
-if (show_figure_mapping_xi):
-    fig = plt.figure()
-    axprops = dict()
+    ni = float(ni)
 
-    ax1 = plt.subplot(111)
-    plt.plot(ii, xx, label="Continuous")
-    plt.plot(i, x, "xr", label="Discrete (integers)")
-    plt.xlabel(r"$i$")
-    plt.ylabel(r"$x$ (Bohr)")
-    #plt.legend(loc="upper left")
-
-    assert(nb_ions == len(x0_m_d))
-    assert(nb_ions == len(ias))
-    assert(nb_ions == len(ibs))
-
-    hl = 3.0 * ii[-1] / 32.0
-    vl = xx[-1] / 8.0
-    # Horizontal lines
-    for j in xrange(nb_ions):
-        plt.plot([ias[j]-hl, ibs[j]+hl], [x0_m_d[j], x0_m_d[j]], ':k')
-        plt.plot([ias[j]-hl, ibs[j]+hl], [x0_p_d[j], x0_p_d[j]], ':k')
-    # Vertical lines
-    for j in xrange(nb_ions):
-        plt.plot([ias[j], ias[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
-        plt.plot([ibs[j], ibs[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
-
-    # Add arrows surrounding linear regions
-    arrow_length = (xmax-xmin)/100.0*7.0 # 7% of figure's vertical axis range
-    head_length  = arrow_length/2.0
-    gap = head_length / 2.0
-    #alpha = 0.75
-    alpha = 1.0
-    for j in xrange(nb_ions):
-        #arrow_x = (ni/16.0) * (1.0 + (ai%2))
-        arrow_x = ias[j] - (15.0*hl/16.0)
-        plt.arrow(arrow_x, x0_m_d[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-        plt.arrow(arrow_x, x0_p_d[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
-        plt.text( arrow_x, x0____[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
-
-    # Add ions' positions to ylabels
-    yaxis, yaxis_label = plt.yticks()
-    yaxis_label = [0]*len(yaxis)
-    for ai in xrange(len(yaxis)):
-        #print "ai = ", ai
-        if (str('%.0f' % yaxis[ai]) == "8"):
-            yaxis_label[ai] = r''
-            continue
-        yaxis_label[ai] = r'$'+str('%.0f' % yaxis[ai])+'$'
-    for x0i in xrange(len(x0s)):
-        #yaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
-        yaxis_label.append(r'$x_{0,' + str(x0i) + r'}$')
-        yaxis       = numpy.append(yaxis,       x0s[x0i])
-    plt.yticks(yaxis, yaxis_label)
-
-    ax1.set_ylim((xmin, xmax))
-    ax1.set_xlim((0.0, ni-1.0))
-
-    # By explicitly setting the yaxis labels, matplotlib will fail to detect
-    # the mouse's vertical position (what's reported in the lower right corner of the window).
-    # So clone the axis (and hide it), set the right limits so a mouse over
-    # will correctly report the position.
-    old_yaxis = plt.twinx()
-    plt.setp(old_yaxis.get_yticklabels(), visible=False)
-    old_yaxis.set_ylim((xmin, xmax))
-
-    xaxis, xaxis_label = plt.xticks()
-    xaxis[-1] = int(ii[-1])
-    plt.xticks(xaxis)
-
-    #matplotlib_params.savefigure(fig, "figure1_mapping")
-
-
-# ***************************************************************************
-if (show_figure_all_mapping):
-    fig = plt.figure()
-    axprops = dict()
-
-    im_x0       = 0.125
-    im_y0       = 0.125
-    im_width    = 0.85
-    #im_height   = 0.266667
-    im_height   = 1.0/3.0 - 1.0/15.0
-    im_gap      = 0.0
-
-    ax1 = fig.add_axes([im_x0, im_y0+2*(im_height+im_gap), im_width, im_height], **axprops)
-    axprops['sharex'] = ax1
-    plt.plot(ii, xx, label=r'$x(i)$ (continuous)')
-    plt.plot(i, x, 'xr', label=r'$x(i)$ (discrete)')
+    # Set ions' locations
+    x0s = numpy.zeros((nb_ions), dtype=numpy.float64)
+    Zs  = numpy.ones((nb_ions), dtype=numpy.float64)
+    xmiddle = (xmin + xmax) / 2.0
+    xstart = xmiddle - (nb_ions * distance / 2.0)
+    xcm = 0.0
     for n in xrange(nb_ions):
-        plt.plot([0.0, ii.max()], [x0_m_d[n], x0_m_d[n]], ':k')
-        plt.plot([0.0, ii.max()], [x0____[n], x0____[n]], ':k')
-        plt.plot([0.0, ii.max()], [x0_p_d[n], x0_p_d[n]], ':k')
-    for j in xrange(len(ias)):
-        plt.plot([ias[j], ias[j]], [xmin, xmax], ':k')
-        plt.plot([ibs[j], ibs[j]], [xmin, xmax], ':k')
-    ax1.set_ylim((xmin, xmax))
-    plt.grid()
-    plt.ylabel(r"$x$")
-    plt.legend()
+        x0s[n] = (numpy.float64(n) * distance)
+        xcm += x0s[n]
+    xcm /= nb_ions
+    for n in xrange(nb_ions):
+        x0s[n] += -xcm + xmiddle
 
-    ax2 = fig.add_axes([im_x0, im_y0+im_height+im_gap, im_width, im_height], **axprops)
-    plt.plot(ii, dxx, '-b', label=r'$J_1(i)$ (continuous)')
-    plt.plot(i, J1, 'xr', label=r'$J_1(i)$ (discrete)')
-    dii = numpy.concatenate(([ii[1]-ii[0]],ii[1:-1]-ii[0:-2],[ii[-2]-ii[-1]]))
-    plt.plot(ii, numpy.gradient(xx, dii), ':m', label=r"$\frac{\Delta x(i)}{\Delta i}$")
-    if (dxx.max() != 0.0):
-        ax2.set_yscale('log')
-    plt.grid()
-    plt.ylabel(r"$J_1$")
-    plt.legend()
+    x0s = [3.0, 5.0, 8.0]
+    print "x0s =", x0s
 
-    ax3 = fig.add_axes([im_x0, im_y0, im_width, im_height], **axprops)
-    plt.plot(ii, ddxx)
-    plt.plot(i, J2, 'xr')
-    plt.plot(ii, numpy.gradient(dxx, dii), ':m')
-    plt.xlabel(r"$i$")
-    plt.ylabel(r"$J_2$")
-    plt.grid()
-    ax3.set_ylim((-5.0, 5.0))
+    x0_m_d = []
+    x0____ = []
+    x0_p_d = []
+    ias    = []
+    ibs    = []
+    xmaxs  = []
 
-    for ax in ax1, ax2:
-        plt.setp(ax.get_xticklabels(), visible=False)
-    for ax in ax1, ax2, ax3:
-        ax.set_xlim((0.0, ni-1.0))
+    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, dxmin, x0s, x0_m_d, x0____, x0_p_d, xmaxs, ias, ibs)
 
-plt.show()
+    #print "x0_m_d = ", x0_m_d
+    #print "x0____ = ", x0____
+    #print "x0_p_d = ", x0_p_d
+
+    # ***************************************************************************
+    # Plot the inverse mapping i(x)
+    if (show_figure_mapping_ix):
+        fig = plt.figure()
+        axprops = dict()
+
+        ax1 = plt.subplot(111)
+        plt.plot(xx, ii, label="Continuous")
+        plt.plot(x, i, "xr", label="Discrete (integers)")
+        plt.xlabel(r"$x$ (Bohr)")
+        plt.ylabel(r"$i$")
+        #plt.legend(loc="upper left")
+
+        for j in xrange(len(x0_m_d)):
+            plt.plot([x0_m_d[j], x0_m_d[j]], [0.0, ni-1.0], ':k')
+            #plt.plot([x0____[j], x0____[j]], [0.0, ni-1.0], '--k')
+            plt.plot([x0_p_d[j], x0_p_d[j]], [0.0, ni-1.0], ':k')
+            #plt.plot([xmaxs[j], xmaxs[j]], [0.0, ni-1.0], '-r')
+
+        #for j in xrange(len(ias)):
+            #plt.plot([xmin, xmax], [ias[j], ias[j]], ':k')
+            #plt.plot([xmin, xmax], [ibs[j], ibs[j]], ':k')
+
+        arrow_length = 0.3
+        head_length  = arrow_length/4.0
+        gap = head_length / 2.0
+        alignment = {'horizontalalignment':'center', 'verticalalignment':'center'}
+        #alpha = 0.75
+        alpha = 1.0
+        arrow_y = 3.0*ni/4.0
+        for ai in xrange(nb_ions):
+            if (ai == nb_ions-1):
+                arrow_y = 1.0*ni/4.0
+            plt.arrow(x0_m_d[ai]-arrow_length-head_length-gap, arrow_y,  arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
+            plt.arrow(x0_p_d[ai]+arrow_length+head_length+gap, arrow_y, -arrow_length, 0.0, color = 'k', head_length=head_length, linewidth=3.0, head_width=3.0, alpha = alpha)
+            plt.text(x0____[ai], arrow_y, r'$2d_' + str(ai) + '$', **alignment)
+
+        ## Add ions' positions to xlabels
+        xaxis, xaxis_label = plt.xticks()
+        xaxis_label = [0]*len(xaxis)
+        for ai in xrange(len(xaxis)):
+            #print "ai = ", ai
+            if (str('%.0f' % xaxis[ai]) == "8"):
+                xaxis_label[ai] = r''
+                continue
+            xaxis_label[ai] = r'$'+str('%.0f' % xaxis[ai])+'$'
+        for x0i in xrange(len(x0s)):
+            xaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
+            xaxis       = numpy.append(xaxis,       x0s[x0i])
+        plt.xticks(xaxis, xaxis_label)
+
+        ax1.set_xlim((xmin, xmax))
+        ax1.set_ylim((0.0, ni-1.0))
+
+        # By explicitly setting the xaxis labels, matplotlib will fail to detect
+        # the mouse position (what's reported in the lower right corner of the window).
+        # So clone the axis (and hide it), set the right limits so a mouse over
+        # will correctly report the position.
+        old_xaxis = plt.twiny()
+        plt.setp(old_xaxis.get_xticklabels(), visible=False)
+        old_xaxis.set_xlim((xmin, xmax))
+        old_xaxis.set_ylim((0.0, ni-1.0))
+
+        #matplotlib_params.savefigure(fig, "figure1_mapping_inverse")
+
+
+
+    # ***************************************************************************
+    # Plot the mapping x(i)
+    if (show_figure_mapping_xi):
+        fig = plt.figure()
+        axprops = dict()
+
+        ax1 = plt.subplot(111)
+        plt.plot(ii, xx, label="Continuous")
+        plt.plot(i, x, "xr", label="Discrete (integers)")
+        plt.xlabel(r"$i$")
+        plt.ylabel(r"$x$ (Bohr)")
+        #plt.legend(loc="upper left")
+
+        assert(nb_ions == len(x0_m_d))
+        assert(nb_ions == len(ias))
+        assert(nb_ions == len(ibs))
+
+        hl = 3.0 * ii[-1] / 32.0
+        vl = xx[-1] / 8.0
+        # Horizontal lines
+        for j in xrange(nb_ions):
+            plt.plot([ias[j]-hl, ibs[j]+hl], [x0_m_d[j], x0_m_d[j]], ':k')
+            plt.plot([ias[j]-hl, ibs[j]+hl], [x0_p_d[j], x0_p_d[j]], ':k')
+        # Vertical lines
+        for j in xrange(nb_ions):
+            plt.plot([ias[j], ias[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
+            plt.plot([ibs[j], ibs[j]], [x0_m_d[j]-vl, x0_p_d[j]+vl], ':k')
+
+        # Add arrows surrounding linear regions
+        arrow_length = (xmax-xmin)/100.0*7.0 # 7% of figure's vertical axis range
+        head_length  = arrow_length/2.0
+        gap = head_length / 2.0
+        #alpha = 0.75
+        alpha = 1.0
+        for j in xrange(nb_ions):
+            #arrow_x = (ni/16.0) * (1.0 + (ai%2))
+            arrow_x = ias[j] - (15.0*hl/16.0)
+            plt.arrow(arrow_x, x0_m_d[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+            plt.arrow(arrow_x, x0_p_d[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
+            plt.text( arrow_x, x0____[j], r'$2d_' + str(j) + '$.', horizontalalignment='right', verticalalignment='center')
+
+        # Add ions' positions to ylabels
+        yaxis, yaxis_label = plt.yticks()
+        yaxis_label = [0]*len(yaxis)
+        for ai in xrange(len(yaxis)):
+            #print "ai = ", ai
+            if (str('%.0f' % yaxis[ai]) == "8"):
+                yaxis_label[ai] = r''
+                continue
+            yaxis_label[ai] = r'$'+str('%.0f' % yaxis[ai])+'$'
+        for x0i in xrange(len(x0s)):
+            #yaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
+            yaxis_label.append(r'$x_{0,' + str(x0i) + r'}$')
+            yaxis       = numpy.append(yaxis,       x0s[x0i])
+        plt.yticks(yaxis, yaxis_label)
+
+        ax1.set_ylim((xmin, xmax))
+        ax1.set_xlim((0.0, ni-1.0))
+
+        # By explicitly setting the yaxis labels, matplotlib will fail to detect
+        # the mouse's vertical position (what's reported in the lower right corner of the window).
+        # So clone the axis (and hide it), set the right limits so a mouse over
+        # will correctly report the position.
+        old_yaxis = plt.twinx()
+        plt.setp(old_yaxis.get_yticklabels(), visible=False)
+        old_yaxis.set_ylim((xmin, xmax))
+
+        xaxis, xaxis_label = plt.xticks()
+        xaxis[-1] = int(ii[-1])
+        plt.xticks(xaxis)
+
+        #matplotlib_params.savefigure(fig, "figure1_mapping")
+
+
+    # ***************************************************************************
+    if (show_figure_all_mapping):
+        fig = plt.figure()
+        axprops = dict()
+
+        im_x0       = 0.125
+        im_y0       = 0.125
+        im_width    = 0.85
+        #im_height   = 0.266667
+        im_height   = 1.0/3.0 - 1.0/15.0
+        im_gap      = 0.0
+
+        ax1 = fig.add_axes([im_x0, im_y0+2*(im_height+im_gap), im_width, im_height], **axprops)
+        axprops['sharex'] = ax1
+        plt.plot(ii, xx, label=r'$x(i)$ (continuous)')
+        plt.plot(i, x, 'xr', label=r'$x(i)$ (discrete)')
+        for n in xrange(nb_ions):
+            plt.plot([0.0, ii.max()], [x0_m_d[n], x0_m_d[n]], ':k')
+            plt.plot([0.0, ii.max()], [x0____[n], x0____[n]], ':k')
+            plt.plot([0.0, ii.max()], [x0_p_d[n], x0_p_d[n]], ':k')
+        for j in xrange(len(ias)):
+            plt.plot([ias[j], ias[j]], [xmin, xmax], ':k')
+            plt.plot([ibs[j], ibs[j]], [xmin, xmax], ':k')
+        ax1.set_ylim((xmin, xmax))
+        plt.grid()
+        plt.ylabel(r"$x$")
+        plt.legend()
+
+        ax2 = fig.add_axes([im_x0, im_y0+im_height+im_gap, im_width, im_height], **axprops)
+        plt.plot(ii, dxx, '-b', label=r'$J_1(i)$ (continuous)')
+        plt.plot(i, J1, 'xr', label=r'$J_1(i)$ (discrete)')
+        dii = numpy.concatenate(([ii[1]-ii[0]],ii[1:-1]-ii[0:-2],[ii[-2]-ii[-1]]))
+        plt.plot(ii, numpy.gradient(xx, dii), ':m', label=r"$\frac{\Delta x(i)}{\Delta i}$")
+        if (dxx.max() != 0.0):
+            ax2.set_yscale('log')
+        plt.grid()
+        plt.ylabel(r"$J_1$")
+        plt.legend()
+
+        ax3 = fig.add_axes([im_x0, im_y0, im_width, im_height], **axprops)
+        plt.plot(ii, ddxx)
+        plt.plot(i, J2, 'xr')
+        plt.plot(ii, numpy.gradient(dxx, dii), ':m')
+        plt.xlabel(r"$i$")
+        plt.ylabel(r"$J_2$")
+        plt.grid()
+        ax3.set_ylim((-5.0, 5.0))
+
+        for ax in ax1, ax2:
+            plt.setp(ax.get_xticklabels(), visible=False)
+        for ax in ax1, ax2, ax3:
+            ax.set_xlim((0.0, ni-1.0))
+
+    plt.show()
+# def main()
+
+
+if __name__ == "__main__":
+    main()
+#
+
