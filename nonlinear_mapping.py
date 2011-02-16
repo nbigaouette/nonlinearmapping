@@ -975,7 +975,7 @@ def main():
     # Set ions' locations
     if (options.n != None):
         distance = 2.0 # Distance between each ions [bohr]
-        nb_ions = len(options.x0s)
+        nb_ions = options.n
         x0s = numpy.zeros((nb_ions), dtype=float)
         Zs  = numpy.ones((nb_ions), dtype=float)
         xmiddle = (options.xmin + options.xmax) / 2.0
