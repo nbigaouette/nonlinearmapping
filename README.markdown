@@ -7,6 +7,14 @@ Content
 This is a simple example of the multicenter nonlinear mapping described in "Nonlinear grid mapping applied to an FDTD-based, multi-center 3D Schrödinger equation solver".
 
 
+Download
+-------------------------
+
+Clone the git repository:
+``git clone git://github.com/nbigaouette/nonlinearmapping.git``
+You can also download an archive from a tag.
+
+
 Attribution
 -------------------------
 
