@@ -80,7 +80,7 @@ class NonLinearMapping:
 
         # Continuous
         self.nii    = 1e5
-        if (self.i_x0md > 0.0):
+        if (self.i_x0md > 0.0 and int(math.ceil(self.imin)) < self.i_x0md):
             self.ii1= numpy.arange(int(math.ceil(self.imin)), self.i_x0md,    (self.i_x0md - self.imin)   / self.nii)
         else:
             self.ii1= numpy.asarray([])
