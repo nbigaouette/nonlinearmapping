@@ -11,6 +11,9 @@ parser.add_option("-m", "--mapping", type=str,                          dest="ma
 parser.add_option("-e", "--even",               action="store_true",    dest="equal",         default=False,        help="Spread the atoms evenly in domain (overwrites -x). [default: %default]")
 parser.add_option("-x",              type=float,action="append",        dest="x0s",           default=None,         help="Ion positions [default: [3,5,8]]")
 parser.add_option("-d", "--dxmin",  type=float,                         dest="dxmin",       default=0.05,       help="Minimum cell size. [default: %default Bohr]")
+parser.add_option("--xmin",         type=float,                         dest="xmin",        default=0.0,        help="Domain lower bound. [default: %default Bohr]")
+parser.add_option("--xmax",         type=float,                         dest="xmax",        default=10.0,       help="Domain upper bound. [default: %default Bohr]")
+parser.add_option("-n",             type=int,                           dest="ni",          default=50,         help="Total number of grid points. [default: %default Bohr]")
 
 (options, args) = parser.parse_args()
 # ***************************************************************************
@@ -970,14 +973,9 @@ def main():
     show_figure_mapping_xi  = True
     show_figure_all_mapping = False
 
-    nb_ions = 3
-    xmin = 0.0
-    xmax = 10.0
-    ni = 50.0
+    nb_ions = len(options.x0s)
 
     distance = 2.0 # Distance between each ions [bohr]
-
-    ni = float(ni)
 
     # Set ions' locations
     if (options.equal):
@@ -999,12 +997,12 @@ def main():
     i_x0md = []
     i_x0pd = []
 
-    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(xmin, xmax, ni, options.dxmin, x0s, i_x0md, i_x0pd, ds)
+    i, x, J1, J2, ii, xx, dxx, ddxx = mapping_nonlinear(options.xmin, options.xmax, options.ni, options.dxmin, x0s, i_x0md, i_x0pd, ds)
 
     print "######################################################################################################"
-    print "Domain range:   [" + str(xmin) + ", " + str(xmax) + "] Bohr"
+    print "Domain range:   [" + str(options.xmin) + ", " + str(options.xmax) + "] Bohr"
     print "Ions positions:", x0s, "Bohr"
-    print "Total number of cells:", int(ni)
+    print "Total number of cells:", int(options.ni)
     print "Subdomains' width 'd':", ds, "Bohr"
 
     # ***************************************************************************
@@ -1035,7 +1033,7 @@ def main():
             plt.plot([i_x0pd[j], i_x0pd[j]], [x0s[j]-ds[j]-vl, x0s[j]+ds[j]+vl], ':k')
 
         # Add arrows surrounding linear regions
-        arrow_length = (xmax-xmin)/100.0*7.0 # 7% of figure's vertical axis range
+        arrow_length = (options.xmax-options.xmin)/100.0*7.0 # 7% of figure's vertical axis range
         head_length  = arrow_length/2.0
         gap = head_length / 2.0
         #alpha = 0.75
@@ -1062,8 +1060,8 @@ def main():
             yaxis       = numpy.append(yaxis,       x0s[x0i])
         plt.yticks(yaxis, yaxis_label)
 
-        ax1.set_ylim((xmin, xmax))
-        ax1.set_xlim((0.0, ni-1.0))
+        ax1.set_ylim((options.xmin, options.xmax))
+        ax1.set_xlim((0.0, options.ni-1.0))
 
         # By explicitly setting the yaxis labels, matplotlib will fail to detect
         # the mouse's vertical position (what's reported in the lower right corner of the window).
@@ -1071,7 +1069,7 @@ def main():
         # will correctly report the position.
         old_yaxis = plt.twinx()
         plt.setp(old_yaxis.get_yticklabels(), visible=False)
-        old_yaxis.set_ylim((xmin, xmax))
+        old_yaxis.set_ylim((options.xmin, options.xmax))
 
         xaxis, xaxis_label = plt.xticks()
         xaxis[-1] = int(ii[-1])
@@ -1099,9 +1097,9 @@ def main():
             plt.plot([0.0, ii.max()], [x0s[n],       x0s[n]],       ':k')
             plt.plot([0.0, ii.max()], [x0s[n]+ds[n], x0s[n]+ds[n]], ':k')
         for j in xrange(len(i_x0md)):
-            plt.plot([i_x0md[j], i_x0md[j]], [xmin, xmax], ':k')
-            plt.plot([i_x0pd[j], i_x0pd[j]], [xmin, xmax], ':k')
-        ax1.set_ylim((xmin, xmax))
+            plt.plot([i_x0md[j], i_x0md[j]], [options.xmin, options.xmax], ':k')
+            plt.plot([i_x0pd[j], i_x0pd[j]], [options.xmin, options.xmax], ':k')
+        ax1.set_ylim((options.xmin, options.xmax))
         plt.grid()
         plt.ylabel(r"$x$")
         plt.legend()
@@ -1129,7 +1127,7 @@ def main():
         for ax in ax1, ax2:
             plt.setp(ax.get_xticklabels(), visible=False)
         for ax in ax1, ax2, ax3:
-            ax.set_xlim((0.0, ni-1.0))
+            ax.set_xlim((0.0, options.ni-1.0))
 
     plt.show()
 # def main()
