@@ -1,14 +1,31 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+# Imported necessary python modules
 import numpy, sys, math
 import matplotlib.pyplot as plt
 
+# Import specific figure parameters
 import matplotlib_params
 
 # ***************************************************************************
 class NonLinearMapping:
+    """
+        Generic class to build the mapping.
+    """
+
     def Initialize(self, imin, imax, xmin, xmax, x0, dxmin):
+        """
+            Initialize generic mapping.
+            Arguments:
+                imin:   Minimum value for "i"
+                imax:   Maximum value for "i"
+                xmin:   Minimum value for "x"
+                xmax:   Maximum value for "x"
+                x0:     Location of center of interest
+                dxmin:  Minimum cell size
+        """
+
         self.imin  = imin
         self.imax  = imax
         self.xmin  = xmin
@@ -22,7 +39,12 @@ class NonLinearMapping:
         self.i_x0md= 0.0
         self.i_x0pd= 0.0
     #
+
     def Allocate_and_Set_is(self):
+        """
+            Allocate memory for arrays (continuous and discrete) in the three different regions (1, 2 and 3).
+        """
+
         # Discrete
         if (self.i_x0md > self.imin):
             self.i1 = numpy.arange(int(math.ceil(self.imin)),       int(math.floor(self.i_x0md))+1)
@@ -33,7 +55,8 @@ class NonLinearMapping:
             self.i3     = numpy.arange(int(math.ceil(self.i_x0pd)), int(math.floor(self.imax))+1)  # TODO: Fix im-1
         else:
             self.i3 = numpy.asarray([])
-        # Contiguous
+
+        # Continuous
         self.nii    = 1e5
         if (self.i_x0md > 0.0):
             self.ii1= numpy.arange(int(math.ceil(self.imin)),       self.i_x0md,    (self.i_x0md - self.imin)   / self.nii)
@@ -45,7 +68,12 @@ class NonLinearMapping:
         else:
             self.ii3= numpy.asarray([])
     #
+
     def Asserts(self):
+        """
+            Verify all calculated values to prevent breakage.
+        """
+
         if (self.x0 + self.d > self.xmax):
             raise ValueError( \
                 "\n  Linear region of ion escape the domain!" + \
@@ -92,7 +120,12 @@ class NonLinearMapping:
         assert(self.i_x0md <= self.imax)
         assert(self.i_x0pd <= self.imax)
     #
+
     def Print(self):
+        """
+            Print mapping information.
+        """
+
         print "i     = [" + str(self.imin) + ", " + str(self.imax) + "["
         print "x     = [" + str(self.xmin) + ", " + str(self.xmax) + "["
         print "dxmin =", self.dxmin
@@ -123,22 +156,33 @@ class NonLinearMapping:
         except:
             pass
     #
+
     def Calculate_i_x0md_i_x0pd(self):
+        """ Calculate i(x0 - d) and i(x0 + d) """
+
         assert(self.d >= 1.0e-8)
         assert(self.dxmin >= 1.0e-8)
         self.i_x0md = self.Calculate_i1(self.x0-self.d)
         self.i_x0pd = self.i_x0md + 2.0*self.d/self.dxmin
     #
+
     def Calculate_i2(self, x):
+        """ Calculate i2(x) (linear region). See equation (21b) """
         return (x - (self.x0 - self.d)) / self.dxmin + self.imin
     def Calculate_x2(self, i):
+        """ Calculate x2(x) (linear region) See equation (23b) """
         return self.dxmin * (i - self.i_x0md) + self.xmin
     def Calculate_dx2di(self, i):
+        """ Calculate del x2/del i (linear region) """
         return self.dxmin * numpy.ones(len(i))
     def Calculate_d2x2di2(self, i):
+        """ Calculate del^2 x2/del i^2 (linear region) """
         return numpy.zeros((len(i)))
     #
+
     def Calculate_Mapping(self):
+        """ Populate the (previously) allocated arrays with the mapped values. See equations (19) """
+
         # Make sure the linear region is inside the domain
         if (self.x0 + self.d > self.xmax):
             raise ValueError("ERROR: Linear region of ion escape the domain!")
@@ -158,7 +202,7 @@ class NonLinearMapping:
         self.ddx2 = self.Calculate_d2x2di2(self.i2)
         self.ddx3 = self.Calculate_d2x3di2(self.i3)
 
-        # Contiguous
+        # Continuous
         self.xx1 = self.Calculate_x1(self.ii1)
         self.xx2 = self.Calculate_x1(self.i_x0md) + self.Calculate_x2(self.ii2) - self.xmin
         self.xx3 = self.Calculate_x1(self.i_x0md) + self.Calculate_x2(self.i_x0pd) + self.Calculate_x3(self.ii3) - 2.0*self.xmin
@@ -173,7 +217,8 @@ class NonLinearMapping:
     #
 
     def Calculate_i(self, x):
-        #if   (x < self.xmin*0.99999):
+        """ Calculate i(x) by testing in which region x is. See equation (16). """
+
         if (x < (self.xmin - 1.0e-2)):
             raise ValueError("Calculate_i(x) called with a value x = "+ str(x) +" lower then xmin = " + str(self.xmin))
         elif (x < self.x0-self.d):
@@ -188,7 +233,8 @@ class NonLinearMapping:
     #
 
     def Calculate_x(self, i):
-        #if (i < self.imin*0.999):
+        """ Calculate x(i) by testing in which region i is. """
+
         if (i < (self.imin - 1.0e-2)):
             raise ValueError("Calculate_x(i) called with a value i = "+ str(i) +" lower then imin = " + str(self.imin))
         elif (i < self.i_x0md):
@@ -203,24 +249,28 @@ class NonLinearMapping:
     #
 
     def Get_i(self):
+        """ Return i(x) for the whole subdomain (discrete values). """
         return numpy.concatenate((self.i1, self.i2, self.i3))
     def Get_x(self):
+        """ Return x(i) for the whole subdomain (discrete values). """
         return numpy.concatenate((self.x1, self.x2, self.x3))
     def Get_dx(self):
-        #print "ddx1 =", self.ddx1
-        #print "ddx2 =", self.ddx2
-        #print "ddx3 =", self.ddx3
-        #print "ddx1.shape =", self.ddx1.shape," ddx2 =", self.ddx2.shape," ddx3 =", self.ddx3.shape
+        """ Return del x / del i for the whole subdomain (discrete values). """
         return numpy.concatenate((self.dx1, self.dx2, self.dx3))
     def Get_ddx(self):
+        """ Return del^2 x / del i^2 for the whole subdomain (discrete values). """
         return numpy.concatenate((self.ddx1, self.ddx2, self.ddx3))
     def Get_ii(self):
+        """ Return i(x) for the whole subdomain (continuous values). """
         return numpy.concatenate((self.ii1, self.ii2, self.ii3))
     def Get_xx(self):
+        """ Return x(i) for the whole subdomain (continuous values). """
         return numpy.concatenate((self.xx1, self.xx2, self.xx3))
     def Get_dxx(self):
+        """ Return del x / del i for the whole subdomain (continuous values). """
         return numpy.concatenate((self.dxx1, self.dxx2, self.dxx3))
     def Get_ddxx(self):
+        """ Return del^2 x / del i^2 for the whole subdomain (continuous values). """
         return numpy.concatenate((self.ddxx1, self.ddxx2, self.ddxx3))
     #
 #
