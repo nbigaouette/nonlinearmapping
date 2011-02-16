@@ -80,13 +80,13 @@ class NonLinearMapping:
 
         # Continuous
         self.nii    = 1e5
-        if (self.i_x0md > 0.0):
-            self.ii1= numpy.arange(int(math.ceil(self.imin)),       self.i_x0md,    (self.i_x0md - self.imin)   / self.nii)
+        if (self.i_x0md > 0.0 and int(math.ceil(self.imin)) < self.i_x0md):
+            self.ii1= numpy.arange(int(math.ceil(self.imin)), self.i_x0md,    (self.i_x0md - self.imin)   / self.nii)
         else:
             self.ii1= numpy.asarray([])
-        self.ii2    = numpy.arange(self.i_x0md,                     self.i_x0pd,    (self.i_x0pd - self.i_x0md) / self.nii)
+        self.ii2    = numpy.arange(self.i_x0md,               self.i_x0pd,    (self.i_x0pd - self.i_x0md) / self.nii)
         if (self.i_x0pd < self.imax):
-            self.ii3= numpy.linspace(self.i_x0pd,                   self.imax,      self.nii)
+            self.ii3= numpy.linspace(self.i_x0pd,             self.imax,      self.nii)
         else:
             self.ii3= numpy.asarray([])
     #
@@ -121,16 +121,16 @@ class NonLinearMapping:
 
         # Verify that x(i(x)) == x and i(x(i)) == i
         tmp_x = self.xmin*0.99999
-        assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-10)
+        assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-4)
 
         tmp_x = self.xmax*0.99999
-        assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-10)
+        assert(abs(tmp_x - self.Calculate_x(self.Calculate_i(tmp_x))) < 1.0e-4)
 
         tmp_i = self.imin*0.99999
-        assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-10)
+        assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-3)
 
         tmp_i = self.imax*0.99999
-        assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-10)
+        assert(abs(tmp_i - self.Calculate_i(self.Calculate_x(tmp_i))) < 1.0e-4)
 
         # Verify i_x0md and i_x0pd
         assert(self.i_x0md >= self.imin)
@@ -717,29 +717,29 @@ class LinearMapping(NonLinearMapping):
     def Calculate_i1(self, x):
         """ Calculate i1(x) (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
-            return numpy.zeros((len(x)))
+            return numpy.zeros((len(x))) + self.imin
         except:
-            return 0.0
+            return self.imin
     def Calculate_i3(self, x):
         """ Calculate i3(x) (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
-            return numpy.zeros((len(x)))
+            return numpy.zeros((len(x))) + self.imax
         except:
-            return 0.0
+            return self.imax
     #
 
     def Calculate_x1(self, i):
         """ Calculate x1(i) (region 1). This should not be called since in linear mapping region 1 is non-existent. """
         try:
-            return numpy.zeros((len(i)))
+            return numpy.zeros((len(i))) + self.xmin
         except:
-            return 0.0
+            return self.xmin
     def Calculate_x3(self, i):
         """ Calculate x3(i) (region 3). This should not be called since in linear mapping region 1 is non-existent. """
         try:
-            return numpy.zeros((len(i)))
+            return numpy.zeros((len(i))) + self.xmax
         except:
-            return 0.0
+            return self.xmax
     #
 
     def Calculate_dx1di(self, i):
@@ -931,10 +931,9 @@ def mapping_nonlinear(xmin, xmax, ni, dxmin = 0.1, x0s = None,
 
 
         # Choose which mapping to plot
-        #if (options.mapping_type == "linear"):
-            #mapping_obj = LinearMapping()
-        #elif (options.mapping_type == "field"):
-        if (options.mapping_type == "field"):
+        if (options.mapping_type == "linear"):
+            mapping_obj = LinearMapping()
+        elif (options.mapping_type == "field"):
             mapping_obj = FieldMapping()
         #elif (options.mapping_type == "sqrt"):
             #mapping_obj = SqrtMapping()
