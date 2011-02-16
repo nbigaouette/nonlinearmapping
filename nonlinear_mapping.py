@@ -8,10 +8,16 @@ parser = OptionParser()
 
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Show all output. [default: %default]")
 parser.add_option("-m", "--mapping", type=str,            dest="mapping_type",  default="potential",    help="Mapping type. [default: %default]")
+parser.add_option("-e", "--equal",              action="store_true",    dest="equal",         default=False,        help="Spread the atoms evenly in domain (overwrites -x). [default: %default]")
+parser.add_option("-e", "--even",               action="store_true",    dest="equal",         default=False,        help="Spread the atoms evenly in domain (overwrites -x). [default: %default]")
+parser.add_option("-x",              type=float,action="append",        dest="x0s",           default=None,         help="Ion positions [default: [3,5,8]]")
 
 (options, args) = parser.parse_args()
 # ***************************************************************************
 
+# Default values
+if (options.x0s == None):
+    options.x0s = [3.0, 5.0, 8.0]
 
 # Imported necessary python modules
 import numpy, sys, math
@@ -977,19 +983,20 @@ def main():
     ni = float(ni)
 
     # Set ions' locations
-    x0s = numpy.zeros((nb_ions), dtype=numpy.float64)
-    Zs  = numpy.ones((nb_ions), dtype=numpy.float64)
-    xmiddle = (xmin + xmax) / 2.0
-    xstart = xmiddle - (nb_ions * distance / 2.0)
-    xcm = 0.0
-    for n in xrange(nb_ions):
-        x0s[n] = (numpy.float64(n) * distance)
-        xcm += x0s[n]
-    xcm /= nb_ions
-    for n in xrange(nb_ions):
-        x0s[n] += -xcm + xmiddle
-
-    x0s = [3.0, 5.0, 8.0]
+    if (options.equal):
+        x0s = numpy.zeros((nb_ions), dtype=float)
+        Zs  = numpy.ones((nb_ions), dtype=float)
+        xmiddle = (xmin + xmax) / 2.0
+        xstart = xmiddle - (nb_ions * distance / 2.0)
+        xcm = 0.0
+        for n in xrange(nb_ions):
+            x0s[n] = (float(n) * distance)
+            xcm += x0s[n]
+        xcm /= nb_ions
+        for n in xrange(nb_ions):
+            x0s[n] += -xcm + xmiddle
+    else:
+        x0s = options.x0s
 
     ds = []
     i_x0md = []
