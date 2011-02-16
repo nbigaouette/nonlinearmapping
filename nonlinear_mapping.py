@@ -1035,10 +1035,8 @@ def main():
     arrow_length = (options.xmax-options.xmin)/100.0*7.0 # 7% of figure's vertical axis range
     head_length  = arrow_length/2.0
     gap = head_length / 2.0
-    #alpha = 0.75
     alpha = 1.0
     for j in xrange(nb_ions):
-        #arrow_x = (ni/16.0) * (1.0 + (ai%2))
         arrow_x = i_x0md[j] - (15.0*hl/16.0)
         plt.arrow(arrow_x, x0s[j]-ds[j]-arrow_length-head_length-gap, 0.0,  arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
         plt.arrow(arrow_x, x0s[j]+ds[j]+arrow_length+head_length+gap, 0.0, -arrow_length, color = 'k', head_length=head_length, linewidth=3.0, head_width=1.0, alpha = alpha)
@@ -1054,7 +1052,6 @@ def main():
             continue
         yaxis_label[ai] = r'$'+str('%.0f' % yaxis[ai])+'$'
     for x0i in xrange(len(x0s)):
-        #yaxis_label.append(r'$x_{\rm{ion}_' + str(x0i) + r'}$')
         yaxis_label.append(r'$x_{0,' + str(x0i) + r'}$')
         yaxis       = numpy.append(yaxis,       x0s[x0i])
     plt.yticks(yaxis, yaxis_label)
@@ -1076,17 +1073,19 @@ def main():
 
 
     # ***************************************************************************
+    # Plot the three functions x(i), J1(i) and J2(i) on a single figure.
     if (options.plot_all):
         fig = plt.figure()
         axprops = dict()
 
+        # Subplot ratios
         im_x0       = 0.125
         im_y0       = 0.125
         im_width    = 0.85
-        #im_height   = 0.266667
         im_height   = 1.0/3.0 - 1.0/15.0
         im_gap      = 0.0
 
+        # Subplot for x(i)
         ax1 = fig.add_axes([im_x0, im_y0+2*(im_height+im_gap), im_width, im_height], **axprops)
         axprops['sharex'] = ax1
         plt.plot(ii, xx, label=r'$x(i)$ (continuous)')
@@ -1103,6 +1102,7 @@ def main():
         plt.ylabel(r"$x$")
         plt.legend()
 
+        # Subplot for J1(i)
         ax2 = fig.add_axes([im_x0, im_y0+im_height+im_gap, im_width, im_height], **axprops)
         plt.plot(ii, dxx, '-b', label=r'$J_1(i)$ (continuous)')
         plt.plot(i, J1, 'xr', label=r'$J_1(i)$ (discrete)')
@@ -1114,6 +1114,7 @@ def main():
         plt.ylabel(r"$J_1$")
         plt.legend()
 
+        # Subplot for J2(i)
         ax3 = fig.add_axes([im_x0, im_y0, im_width, im_height], **axprops)
         plt.plot(ii, ddxx)
         plt.plot(i, J2, 'xr')
@@ -1123,6 +1124,7 @@ def main():
         plt.grid()
         ax3.set_ylim((-5.0, 5.0))
 
+        # Hide ticks for subplots 1 and 2
         for ax in ax1, ax2:
             plt.setp(ax.get_xticklabels(), visible=False)
         for ax in ax1, ax2, ax3:
