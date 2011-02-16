@@ -1106,8 +1106,6 @@ def main():
         ax2 = fig.add_axes([im_x0, im_y0+im_height+im_gap, im_width, im_height], **axprops)
         plt.plot(ii, dxx, '-b', label=r'$J_1(i)$ (continuous)')
         plt.plot(i, J1, 'xr', label=r'$J_1(i)$ (discrete)')
-        dii = numpy.concatenate(([ii[1]-ii[0]],ii[1:-1]-ii[0:-2],[ii[-2]-ii[-1]]))
-        plt.plot(ii, numpy.gradient(xx, dii), ':m', label=r"$\frac{\Delta x(i)}{\Delta i}$")
         if (dxx.max() != 0.0):
             ax2.set_yscale('log')
         plt.grid()
@@ -1118,7 +1116,6 @@ def main():
         ax3 = fig.add_axes([im_x0, im_y0, im_width, im_height], **axprops)
         plt.plot(ii, ddxx)
         plt.plot(i, J2, 'xr')
-        plt.plot(ii, numpy.gradient(dxx, dii), ':m')
         plt.xlabel(r"$i$")
         plt.ylabel(r"$J_2$")
         plt.grid()
