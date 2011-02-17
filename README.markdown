@@ -14,7 +14,7 @@ Clone the git repository:
 
 ``git clone git://github.com/nbigaouette/nonlinearmapping.git``
 
-You can also download an archive by clicking the "Downloads" button at the top right of this page.
+You can also download an archive by clicking the "Downloads" button at the top right of this page or [visiting this page](https://github.com/nbigaouette/nonlinearmapping/archives/master).
 
 
 Attribution
