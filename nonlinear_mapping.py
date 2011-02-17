@@ -13,7 +13,7 @@ parser.add_option("-x",             type=float, action="append",        dest="x0
 parser.add_option("-d", "--dxmin",  type=float,                         dest="dxmin",       default=0.05,       help="Minimum cell size. [default: %default Bohr]")
 parser.add_option("--xmin",         type=float,                         dest="xmin",        default=0.0,        help="Domain lower bound. [default: %default Bohr]")
 parser.add_option("--xmax",         type=float,                         dest="xmax",        default=10.0,       help="Domain upper bound. [default: %default Bohr]")
-parser.add_option("--ni",           type=int,                           dest="ni",          default=50,         help="Total number of grid points. [default: %default Bohr]")
+parser.add_option("--ni",           type=int,                           dest="ni",          default=50,         help="Total number of grid points. [default: %default]")
 parser.add_option("-a", "--all",                action="store_true",    dest="plot_all",    default=False,      help="Plot all mapping (x(i), J1(i) and J2(i)). [default: %default]")
 
 (options, args) = parser.parse_args()
